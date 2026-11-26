@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrailMate 경남 — 2030 스마트 산행 플랫폼 프로토타입 (팀 IMPACT)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans KR & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans KR"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            forest: {
+              50: '#f1f8f4',
+              100: '#dceee3',
+              200: '#bbddc9',
+              500: '#2d7a53',
+              600: '#1f6140',
+              700: '#184d33',
+              800: '#143d29',
+              900: '#0f2e1f',
+            },
+            sand: '#f7f6f2',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', 'Inter', sans-serif;
+      background-color: #e9ece8;
+      color: #1e293b;
+    }
+    /* Custom scrollbar inside mobile frame */
+    .phone-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .phone-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .phone-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.85); opacity: 0.85; }
+      70% { transform: scale(1.6); opacity: 0; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+    .pulse-ring {
+      transform-origin: center;
+      transform-box: fill-box;
+      animation: pulseRing 2s infinite ease-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start py-4 px-3 sm:py-6">
+
+  <!-- Top Control Bar for Hackathon Demo & PRD Screenshot -->
+  <header class="w-full max-w-6xl bg-white/95 backdrop-blur border border-slate-200 rounded-2xl shadow-sm px-4 py-3 mb-5 flex flex-col md:flex-row items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-forest-700 text-white flex items-center justify-center font-extrabold text-lg shadow-sm">
+        TM
+      </div>
+      <div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="font-bold text-slate-900 text-base sm:text-lg">TrailMate 경남 — 인터랙티브 MVP 프로토타입</h1>
+          <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-forest-100 text-forest-800">팀 IMPACT · 해커톤 시연용</span>
+        </div>
+        <p class="text-xs text-slate-500 mt-0.5">핵심 흐름: ① 코스 선택 → ② 코스 상세 → ③ 크루 합류·소통방 → ④ GPS 안전·고도 통신 안내</p>
+      </div>
+    </div>
+
+    <!-- Mode Switcher: Interactive Single Mobile vs 4-Screen PRD Wireframe Flow View -->
+    <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl w-full md:w-auto justify-center">
+      <button id="btn-mode-single" onclick="setViewMode('single')" class="flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition bg-forest-700 text-white shadow-sm">
+        📱 인터랙티브 시연 모드
+      </button>
+      <button id="btn-mode-flow" onclick="setViewMode('flow')" class="flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 hover:text-slate-900">
+        🖼️ 4단계 한눈에 보기 (PRD 캡처용)
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== VIEW 1: SINGLE INTERACTIVE PHONE MODE ==================== -->
+  <main id="single-mode-container" class="w-full max-w-md flex flex-col items-center">
+    <!-- Phone Outer Bezel -->
+    <div class="w-full bg-slate-900 rounded-[2.6rem] p-3 shadow-2xl border-4 border-slate-800">
+      <!-- Phone Inner Screen -->
+      <div class="bg-sand rounded-[2.1rem] overflow-hidden flex flex-col h-[760px] max-h-[82vh] relative">
+
+        <!-- Status Bar -->
+        <div class="bg-forest-800 text-white px-5 pt-2.5 pb-1.5 flex items-center justify-between text-[11px] font-medium">
+          <span>9:41</span>
+          <span class="bg-forest-900/80 px-2.5 py-0.5 rounded-full text-[10px] tracking-tight text-forest-100">경상남도 스마트 산행 MVP</span>
+          <div class="flex items-center gap-1.5">
+            <span id="status-signal-text" class="text-[10px] text-emerald-300 font-semibold">LTE 양호</span>
+            <span class="inline-block w-4 h-2.5 border border-white/80 rounded-sm p-[1px]">
+              <span class="block h-full w-3/4 bg-emerald-400 rounded-[1px]"></span>
+            </span>
+          </div>
+        </div>
+
+        <!-- App Header & Step Flow Indicator -->
+        <div class="bg-forest-700 text-white px-4 pt-2 pb-3 shadow-sm">
+          <div class="flex items-center justify-between mb-2.5">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 17l6-8 4 5 3-4 5 7H3z" />
+              </svg>
+              <span class="font-extrabold text-base tracking-tight">TrailMate 경남</span>
+            </div>
+            <button onclick="openModal('modal-guide')" class="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg font-medium transition">
+              시연 안내
+            </button>
+          </div>
+
+          <!-- 4-Step Progress Bar -->
+          <div class="grid grid-cols-4 gap-1 bg-forest-900/50 p-1 rounded-xl text-[11px]">
+            <button onclick="goToStep(1)" id="step-pill-1" class="step-pill py-1.5 px-1 rounded-lg font-bold text-center transition bg-white text-forest-800 shadow-sm">
+              1. 코스선택
+            </button>
+            <button onclick="goToStep(2)" id="step-pill-2" class="step-pill py-1.5 px-1 rounded-lg font-medium text-center transition text-forest-100 hover:bg-white/10">
+              2. 코스상세
+            </button>
+            <button onclick="goToStep(3)" id="step-pill-3" class="step-pill py-1.5 px-1 rounded-lg font-medium text-center transition text-forest-100 hover:bg-white/10">
+              3. 크루소통
+            </button>
+            <button onclick="goToStep(4)" id="step-pill-4" class="step-pill py-1.5 px-1 rounded-lg font-medium text-center transition text-forest-100 hover:bg-white/10">
+              4. 안전지도
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Screen Content Area -->
+        <div id="screen-body" class="flex-1 overflow-y-auto phone-scroll p-4 space-y-4">
+
+          <!-- ==================== STEP 1: HOME (AI COURSE RECOMMENDATION + AUX TABS) ==================== -->
+          <section id="screen-1" class="space-y-4">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-br from-forest-700 via-forest-600 to-emerald-700 rounded-2xl p-4 text-white shadow-md relative overflow-hidden">
+              <div class="relative z-10">
+                <span class="inline-block text-[11px] font-semibold bg-white/20 px-2.5 py-0.5 rounded-full mb-1.5">경남 2030 청년 맞춤 아웃도어</span>
+                <h2 class="text-lg font-extrabold leading-snug">이번 주말, 경남의 어떤 산으로<br/>가볍게 떠나볼까요?</h2>
+                <p class="text-xs text-forest-100 mt-1">난이도와 오늘 컨디션에 맞는 코스를 고르고 크루와 바로 연결하세요.</p>
+              </div>
+              <svg class="w-28 h-28 text-white/10 absolute -right-3 -bottom-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M14 6l-3.75 5 2.85 3.8-1.6 1.2C9.81 13.75 7 10 7 10l-6 8h22L14 6z"/>
+              </svg>
+            </div>
+
+            <!-- Condition Selector -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-700">오늘 나의 산행 컨디션</span>
+                <span id="condition-badge" class="text-[11px] font-semibold text-forest-700 bg-forest-50 px-2 py-0.5 rounded-md">가볍게 리프레시</span>
+              </div>
+              <div class="grid grid-cols-3 gap-1.5 text-xs">
+                <button onclick="selectCondition('가볍게 리프레시', '초급')" class="cond-btn py-2 px-2 rounded-xl font-semibold border border-forest-600 bg-forest-50 text-forest-800 transition">
+                  🌿 가볍게
+                </button>
+                <button onclick="selectCondition('적당한 땀과 능선', '중급')" class="cond-btn py-2 px-2 rounded-xl font-medium border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition">
+                  ⛰️ 적당한 땀
+                </button>
+                <button onclick="selectCondition('도전적인 정상 종주', '고급')" class="cond-btn py-2 px-2 rounded-xl font-medium border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition">
+                  🔥 정상 도전
+                </button>
+              </div>
+            </div>
+
+            <!-- Difficulty Filter Pills -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-extrabold text-slate-800">경남 추천 산·코스 (MVP 큐레이션)</h3>
+                <span class="text-[11px] text-slate-400">코스 탭하여 상세 이동</span>
+              </div>
+              <div class="flex gap-1.5 overflow-x-auto pb-1">
+                <button onclick="filterCourses('전체')" class="diff-btn px-3 py-1.5 rounded-full text-xs font-bold bg-forest-700 text-white shrink-0">전체</button>
+                <button onclick="filterCourses('초급')" class="diff-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 shrink-0">초급</button>
+                <button onclick="filterCourses('중급')" class="diff-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 shrink-0">중급</button>
+                <button onclick="filterCourses('고급')" class="diff-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 shrink-0">고급</button>
+                <button onclick="filterCourses('산책로')" class="diff-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 shrink-0">산책로(부가)</button>
+              </div>
+            </div>
+
+            <!-- Course List Container -->
+            <div id="course-list" class="space-y-2.5"></div>
+
+            <!-- Auxiliary Features Section (Clearly marked as Secondary / Phase 2 Vision) -->
+            <div class="pt-1">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xs font-extrabold text-slate-600">부가 연계 & 후속 확장 기능 미리보기</h3>
+                <span class="text-[10px] px-2 py-0.5 rounded bg-slate-200 text-slate-600 font-semibold">Phase 2 확장</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="openModal('modal-trail-event')" class="bg-white hover:bg-forest-50 border border-slate-200 rounded-2xl p-3 text-left transition shadow-sm">
+                  <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm mb-1.5">🏃</div>
+                  <div class="text-xs font-bold text-slate-800">트레일 대회·산책로</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">경남 트레일 러닝 & 둘레길</div>
+                </button>
+                <button onclick="openModal('modal-gear')" class="bg-white hover:bg-forest-50 border border-slate-200 rounded-2xl p-3 text-left transition shadow-sm">
+                  <div class="w-8 h-8 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm mb-1.5">🎒</div>
+                  <div class="text-xs font-bold text-slate-800">장비 대여·공유</div>
+                  <div class="text-[11px] text-slate-500 mt-0.5">초보자 스틱·배낭 단기 대여</div>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==================== STEP 2: COURSE DETAIL ==================== -->
+          <section id="screen-2" class="hidden space-y-4">
+            <div class="flex items-center justify-between">
+              <button onclick="goToStep(1)" class="text-xs font-bold text-forest-700 flex items-center gap-1 hover:underline">
+                ← 코스 목록으로
+              </button>
+              <span id="detail-diff-badge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">초급</span>
+            </div>
+
+            <!-- Course Title & Elevation Card -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+              <div>
+                <p id="detail-region" class="text-xs font-semibold text-forest-600">경남 창원시 의창구·마산회원구</p>
+                <h2 id="detail-title" class="text-lg font-extrabold text-slate-900 mt-0.5">창원 천주산 진달래길 코스</h2>
+                <p id="detail-desc" class="text-xs text-slate-600 mt-1 leading-relaxed">완만한 흙길과 능선 전망이 어우러져 등산 입문 청년도 부담 없이 즐길 수 있는 대표 힐링 코스입니다.</p>
+              </div>
+
+              <!-- Key Metrics Grid -->
+              <div class="grid grid-cols-3 gap-2 bg-sand rounded-xl p-2.5 text-center border border-slate-200/60">
+                <div>
+                  <div class="text-[10px] text-slate-500">총 거리</div>
+                  <div id="detail-distance" class="text-sm font-extrabold text-slate-800">4.2 km</div>
+                </div>
+                <div class="border-x border-slate-200">
+                  <div class="text-[10px] text-slate-500">예상 소요</div>
+                  <div id="detail-duration" class="text-sm font-extrabold text-slate-800">1시간 40분</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-500">최고 고도</div>
+                  <div id="detail-elevation" class="text-sm font-extrabold text-forest-700">638 m</div>
+                </div>
+              </div>
+
+              <!-- Stylized Elevation Profile SVG -->
+              <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70">
+                <div class="flex items-center justify-between text-[11px] mb-1.5">
+                  <span class="font-bold text-slate-700">고도 프로필 & 주요 거점</span>
+                  <span class="text-amber-600 font-semibold">능선 구간 전파 약함 주의</span>
+                </div>
+                <svg viewBox="0 0 300 75" class="w-full h-16 overflow-visible">
+                  <defs>
+                    <linearGradient id="elevGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#2d7a53" stop-opacity="0.35" />
+                      <stop offset="100%" stop-color="#2d7a53" stop-opacity="0.02" />
+                    </linearGradient>
+                  </defs>
+                  <!-- Warning Ridge Band -->
+                  <rect x="165" y="5" width="75" height="60" rx="4" fill="#fef3c7" opacity="0.8" />
+                  <text x="202" y="16" font-size="8" fill="#b45309" text-anchor="middle" font-weight="bold">고지대 통신주의</text>
+                  <!-- Elevation Path -->
+                  <path id="detail-elev-area" d="M10,65 Q75,55 120,38 T205,15 T290,62 L290,65 L10,65 Z" fill="url(#elevGrad)" />
+                  <path id="detail-elev-line" d="M10,65 Q75,55 120,38 T205,15 T290,62" fill="none" stroke="#1f6140" stroke-width="2.5" stroke-linecap="round" />
+                  <!-- Markers -->
+                  <circle cx="10" cy="65" r="3.5" fill="#1f6140" />
+                  <circle cx="120" cy="38" r="3.5" fill="#0284c7" />
+                  <circle cx="205" cy="15" r="4" fill="#dc2626" />
+                  <circle cx="290" cy="62" r="3.5" fill="#1f6140" />
+                  <text x="14" y="73" font-size="8" fill="#475569">입구</text>
+                  <text x="120" y="50" font-size="8" fill="#0284c7" text-anchor="middle">쉼터</text>
+                  <text x="205" y="27" font-size="8" fill="#dc2626" text-anchor="middle" font-weight="bold">정상</text>
+                  <text x="284" y="73" font-size="8" fill="#475569" text-anchor="end">하산</text>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Caution & Checklist Card -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+              <h3 class="text-xs font-extrabold text-slate-800">산행 전 체크 & 안전 유의사항</h3>
+              <ul id="detail-cautions" class="text-xs text-slate-600 space-y-1.5">
+                <li class="flex items-start gap-2"><span class="text-amber-500 font-bold">•</span> <span>하산 직전 자갈길 구간 미끄럼 주의 (접지력 좋은 운동화/등산화 권장)</span></li>
+                <li class="flex items-start gap-2"><span class="text-forest-600 font-bold">•</span> <span>입산 전 코스·휴게시설·사고 다발지역 데이터가 자동 저장됩니다.</span></li>
+              </ul>
+            </div>
+
+            <!-- Primary Flow CTAs -->
+            <div class="space-y-2 pt-1">
+              <button onclick="goToStep(3)" class="w-full py-3.5 px-4 rounded-2xl bg-forest-700 hover:bg-forest-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+                <span>👥 크루 합류 및 현장 소통방 이동</span>
+                <span>→</span>
+              </button>
+              <button onclick="goToStep(4)" class="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 text-forest-800 border border-forest-300 font-bold text-xs transition flex items-center justify-center gap-1.5">
+                <span>🗺️ 바로 산행 안전·위치 지도 확인하기</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- ==================== STEP 3: CREW JOIN & LIVE CHAT ROOM ==================== -->
+          <section id="screen-3" class="hidden flex flex-col h-full space-y-3">
+            <!-- Crew Room Header Card -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2.5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <h2 id="chat-room-title" class="text-sm font-extrabold text-slate-900">천주산 주말 2030 크루방</h2>
+                  </div>
+                  <p class="text-[11px] text-slate-500 mt-0.5">참여 인원 <strong id="crew-count" class="text-forest-700">6명</strong> · 하산 후 마산역 택시 셰어 모집 중</p>
+                </div>
+                <button id="btn-join-crew" onclick="toggleJoinCrew()" class="px-3 py-1.5 rounded-xl bg-forest-700 text-white text-xs font-bold shadow-sm transition">
+                  크루 합류하기
+                </button>
+              </div>
+
+              <!-- Consent-based GPS Sharing Toggle -->
+              <div class="flex items-center justify-between bg-forest-50/80 border border-forest-200/80 rounded-xl px-3 py-2">
+                <div>
+                  <div class="text-xs font-bold text-forest-900">산행 중 크루 GPS 위치 공유 (동의 기반)</div>
+                  <div id="gps-consent-sub" class="text-[10px] text-forest-700">ON — 지도에서 크루원과 서로의 마지막 확인 위치를 봅니다</div>
+                </div>
+                <button id="toggle-gps-consent" onclick="toggleGpsConsent()" aria-label="GPS 위치 공유 동의 전환" class="w-11 h-6 rounded-full bg-forest-600 p-0.5 transition flex items-center justify-end">
+                  <span class="w-5 h-5 rounded-full bg-white shadow"></span>
+                </button>
+              </div>
+
+              <!-- Offline Queue Simulation Toggle (For Mountain Dead-Zone Demo) -->
+              <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+                <span class="text-[11px] text-slate-600 font-medium">📶 산속 통신 약함 시뮬레이션 (로컬 큐 저장)</span>
+                <button id="btn-sim-weak-signal" onclick="toggleWeakSignalChat()" class="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">
+                  정상 통신 중
+                </button>
+              </div>
+            </div>
+
+            <!-- Chat Messages Feed -->
+            <div id="chat-messages" class="flex-1 min-h-[230px] max-h-[270px] overflow-y-auto phone-scroll bg-white rounded-2xl p-3 border border-slate-200 space-y-2.5">
+              <!-- Initial messages injected via JS -->
+            </div>
+
+            <!-- Quick Status Chips (Lightweight Packets) -->
+            <div class="flex gap-1.5 overflow-x-auto pb-0.5">
+              <button onclick="sendQuickStatus('⛰️ 정상 도착했어요! 바람이 시원하네요')" class="shrink-0 text-[11px] font-semibold bg-white hover:bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-1 rounded-full">
+                ⛰️ 정상 도착
+              </button>
+              <button onclick="sendQuickStatus('💧 쉼터에서 10분 휴식 중입니다')" class="shrink-0 text-[11px] font-semibold bg-white hover:bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-1 rounded-full">
+                💧 휴식 중
+              </button>
+              <button onclick="sendQuickStatus('🚕 하산 후 역까지 택시 같이 타실 분!')" class="shrink-0 text-[11px] font-semibold bg-white hover:bg-forest-50 text-forest-800 border border-forest-200 px-2.5 py-1 rounded-full">
+                🚕 하산 택시 동행
+              </button>
+            </div>
+
+            <!-- Chat Input Form -->
+            <form onsubmit="handleSendChat(event)" class="flex gap-2">
+              <input id="chat-input" type="text" placeholder="날씨·장비·하산 소통 메시지 입력..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
+              <button type="submit" class="px-4 py-2.5 rounded-xl bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs shrink-0">
+                전송
+              </button>
+            </form>
+
+            <!-- Next Step CTA -->
+            <button onclick="goToStep(4)" class="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
+              <span>📍 4단계: 산행 안전·위치 지도 보기</span>
+              <span>→</span>
+            </button>
+          </section>
+
+          <!-- ==================== STEP 4: GPS SAFETY & ALTITUDE WARNING MAP ==================== -->
+          <section id="screen-4" class="hidden space-y-3">
+            <!-- High-Altitude Communication Weak Zone Banner (Dynamic) -->
+            <div id="altitude-warning-banner" class="hidden bg-amber-50 border-l-4 border-amber-500 rounded-xl p-3 shadow-sm">
+              <div class="flex items-start gap-2">
+                <span class="text-base leading-none mt-0.5">⚠️</span>
+                <div>
+                  <div class="text-xs font-extrabold text-amber-900">고지대 통신 취약 구간 진입 안내</div>
+                  <p class="text-[11px] text-amber-800 mt-0.5 leading-snug">
+                    전파 및 데이터 연결로 인해 서버 통신이 원활하지 않을 수 있습니다. <strong>사전 저장된 오프라인 코스·안전 데이터</strong>로 계속 안내됩니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Stylized Topographic Map -->
+            <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <h2 id="map-course-name" class="text-sm font-extrabold text-slate-900">천주산 실시간 산행 안전 지도</h2>
+                  <p class="text-[10px] text-slate-500">휴게시설 · 사고 다발지역 · 동의 크루 위치 통합</p>
+                </div>
+                <button onclick="openModal('modal-sos')" class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-sm">
+                  🚨 119 / 지점번호
+                </button>
+              </div>
+
+              <!-- SVG Trail Map -->
+              <div class="relative rounded-xl overflow-hidden border border-slate-200 bg-[#e6f0e6]">
+                <svg viewBox="0 0 320 210" class="w-full h-48 block">
+                  <!-- Topographic Contours -->
+                  <ellipse cx="215" cy="65" rx="95" ry="55" fill="#d5e7d5" />
+                  <ellipse cx="215" cy="65" rx="62" ry="36" fill="#c3dcc3" />
+                  <ellipse cx="215" cy="65" rx="32" ry="18" fill="#b0d0b0" />
+
+                  <!-- Trail Path -->
+                  <path d="M35,180 C70,155 95,145 125,120 C155,95 180,85 215,65 C245,50 270,80 285,135" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" />
+                  <path d="M35,180 C70,155 95,145 125,120 C155,95 180,85 215,65 C245,50 270,80 285,135" fill="none" stroke="#2d7a53" stroke-width="3.5" stroke-dasharray="6 4" stroke-linecap="round" />
+
+                  <!-- Accident-Prone Zone (Public/Fire Dept Reference) -->
+                  <circle cx="242" cy="76" r="24" fill="#ef4444" fill-opacity="0.22" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 2" />
+                  <g transform="translate(232, 60)">
+                    <polygon points="10,2 20,18 0,18" fill="#dc2626" />
+                    <text x="10" y="15" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">!</text>
+                  </g>
+                  <rect x="196" y="84" width="94" height="16" rx="4" fill="#991b1b" />
+                  <text x="243" y="95" font-size="8.5" fill="#ffffff" text-anchor="middle" font-weight="bold">사고 다발지역 (급경사)</text>
+
+                  <!-- Rest / Emergency Facility Marker -->
+                  <g transform="translate(112, 102)">
+                    <rect x="0" y="0" width="22" height="22" rx="6" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" />
+                    <text x="11" y="15" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">쉼</text>
+                  </g>
+                  <text x="123" y="135" font-size="8.5" fill="#0369a1" text-anchor="middle" font-weight="bold">전망 쉼터·구급함</text>
+
+                  <!-- Trailhead Marker -->
+                  <circle cx="35" cy="180" r="6" fill="#1e293b" />
+                  <text x="35" y="196" font-size="8.5" fill="#1e293b" text-anchor="middle" font-weight="bold">입구·주차장</text>
+
+                  <!-- Consenting Crew Member Marker -->
+                  <g id="map-crew-marker" transform="translate(185, 62)">
+                    <circle cx="10" cy="10" r="8" fill="#7c3aed" stroke="#ffffff" stroke-width="2" />
+                    <text x="10" y="13" font-size="8" fill="#ffffff" text-anchor="middle" font-weight="bold">크루</text>
+                    <text x="10" y="-3" font-size="8" fill="#5b21b6" text-anchor="middle" font-weight="bold">민규 외 2명</text>
+                  </g>
+
+                  <!-- User Current Position Marker (Moves with Altitude Slider) -->
+                  <g id="map-user-marker" transform="translate(145, 98)">
+                    <circle cx="10" cy="10" r="11" fill="#16a34a" class="pulse-ring" />
+                    <circle cx="10" cy="10" r="7" fill="#15803d" stroke="#ffffff" stroke-width="2" />
+                    <text x="10" y="27" font-size="8.5" fill="#14532d" text-anchor="middle" font-weight="bold">내 위치</text>
+                  </g>
+                </svg>
+              </div>
+
+              <!-- Map Legend -->
+              <div class="flex items-center justify-between text-[10px] text-slate-600 mt-2 px-1">
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-green-700 inline-block"></span> 내 위치</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-violet-600 inline-block"></span> 동의 크루</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-sky-600 inline-block"></span> 휴게시설</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span> 사고다발</span>
+              </div>
+            </div>
+
+            <!-- Interactive Altitude Simulator (Tests High-Altitude Notice!) -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-800">⛰️ 현재 고도 시뮬레이터 (시연 테스트용)</span>
+                <span id="altitude-readout" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-forest-100 text-forest-800">해발 420m</span>
+              </div>
+              <input id="altitude-slider" type="range" min="200" max="1100" step="10" value="420" oninput="updateAltitude(this.value)" class="w-full accent-forest-700 cursor-pointer" />
+              <div class="flex justify-between text-[10px] text-slate-400">
+                <span>200m (입구)</span>
+                <span class="text-amber-600 font-semibold">650m (통신 취약 기준)</span>
+                <span>1,100m (정상)</span>
+              </div>
+            </div>
+
+            <!-- Safety & Facility Summary Cards -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-red-50 border border-red-200 rounded-xl p-2.5">
+                <div class="text-[11px] font-extrabold text-red-800">⚠️ 전방 240m 사고 주의</div>
+                <p class="text-[10px] text-red-700 mt-0.5 leading-snug">소방·공공 참고 데이터: 능선 암반 미끄럼 다발 구간</p>
+              </div>
+              <div class="bg-sky-50 border border-sky-200 rounded-xl p-2.5">
+                <div class="text-[11px] font-extrabold text-sky-800">🏥 가까운 휴게·구급</div>
+                <p class="text-[10px] text-sky-700 mt-0.5 leading-snug">전망 쉼터 화장실·구급함 (현 위치에서 약 350m)</p>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Bottom Tab Bar -->
+        <nav class="bg-white border-t border-slate-200 px-2 py-2 grid grid-cols-4 text-center">
+          <button onclick="goToStep(1)" id="nav-btn-1" class="nav-btn flex flex-col items-center justify-center text-forest-700 font-bold">
+            <span class="text-base leading-none">🏠</span>
+            <span class="text-[10px] mt-1">홈·추천</span>
+          </button>
+          <button onclick="goToStep(2)" id="nav-btn-2" class="nav-btn flex flex-col items-center justify-center text-slate-400 font-medium">
+            <span class="text-base leading-none">⛰️</span>
+            <span class="text-[10px] mt-1">코스상세</span>
+          </button>
+          <button onclick="goToStep(3)" id="nav-btn-3" class="nav-btn flex flex-col items-center justify-center text-slate-400 font-medium">
+            <span class="text-base leading-none">💬</span>
+            <span class="text-[10px] mt-1">크루소통</span>
+          </button>
+          <button onclick="goToStep(4)" id="nav-btn-4" class="nav-btn flex flex-col items-center justify-center text-slate-400 font-medium">
+            <span class="text-base leading-none">🧭</span>
+            <span class="text-[10px] mt-1">안전지도</span>
+          </button>
+        </nav>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ==================== VIEW 2: 4-SCREEN HORIZONTAL WIREFRAME FLOW (FOR PRD SCREENSHOT) ==================== -->
+  <section id="flow-mode-container" class="hidden w-full max-w-6xl bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-md">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-200">
+      <div>
+        <span class="text-xs font-bold text-forest-700 bg-forest-50 px-2.5 py-1 rounded-full">PRD 첨부용 핵심 사용자 흐름도</span>
+        <h2 class="text-lg font-extrabold text-slate-900 mt-1.5">TrailMate 경남 — 핵심 4단계 시연 화면 흐름 (팀 IMPACT)</h2>
+      </div>
+      <p class="text-xs text-slate-500">이 영역을 캡처하여 PRD 5번 '와이어프레임·화면 흐름·프로토타입' 란에 첨부할 수 있습니다.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Card 1 -->
+      <div class="bg-sand rounded-2xl p-3 border border-slate-200 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-extrabold text-forest-800">STEP 1. 홈 · 수준별 코스 선택</span>
+          <span class="text-[10px] bg-forest-700 text-white px-2 py-0.5 rounded-full">진입</span>
+        </div>
+        <div class="bg-white rounded-xl p-3 border border-slate-200 flex-1 space-y-2.5 text-xs">
+          <div class="bg-forest-700 text-white rounded-lg p-2.5">
+            <div class="text-[10px] text-emerald-200">경남 2030 스마트 산행</div>
+            <div class="font-bold mt-0.5">난이도·컨디션별 코스 추천</div>
+          </div>
+          <div class="flex gap-1 text-[10px]">
+            <span class="px-2 py-0.5 rounded-full bg-forest-700 text-white font-bold">초급</span>
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">중급</span>
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">고급</span>
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">산책로</span>
+          </div>
+          <div class="p-2 rounded-lg bg-forest-50 border border-forest-200">
+            <div class="font-bold text-slate-800">창원 천주산 진달래길</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">4.2km · 1시간 40분 · 해발 638m</div>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-50 border border-slate-200">
+            <div class="font-bold text-slate-800">마산 무학산 둘레·정상</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">6.8km · 2시간 50분 · 해발 761m</div>
+          </div>
+          <div class="pt-1 border-t border-slate-100 text-[10px] text-slate-400">
+            + 부가 확장: 트레일 대회 · 장비 대여
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bg-sand rounded-2xl p-3 border border-slate-200 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-extrabold text-forest-800">STEP 2. 코스 상세 · 고도 확인</span>
+          <span class="text-[10px] bg-forest-600 text-white px-2 py-0.5 rounded-full">탐색</span>
+        </div>
+        <div class="bg-white rounded-xl p-3 border border-slate-200 flex-1 space-y-2.5 text-xs">
+          <div>
+            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">초급 · 입문 추천</span>
+            <div class="font-extrabold text-slate-900 mt-1">창원 천주산 진달래길</div>
+          </div>
+          <div class="grid grid-cols-3 gap-1 bg-slate-50 p-2 rounded-lg text-center text-[10px]">
+            <div><span class="text-slate-400 block">거리</span><strong>4.2km</strong></div>
+            <div><span class="text-slate-400 block">시간</span><strong>1h 40m</strong></div>
+            <div><span class="text-slate-400 block">고도</span><strong>638m</strong></div>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 text-[10px] text-amber-800">
+            <strong>고도 프로필 & 사전 저장:</strong><br/>입산 전 코스·안전 데이터 기기 자동 저장
+          </div>
+          <div class="pt-2">
+            <div class="w-full py-2 rounded-lg bg-forest-700 text-white text-center font-bold text-[11px]">
+              크루 합류 및 소통방 이동 →
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bg-sand rounded-2xl p-3 border border-slate-200 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-extrabold text-forest-800">STEP 3. 크루 합류 · 현장 소통</span>
+          <span class="text-[10px] bg-forest-600 text-white px-2 py-0.5 rounded-full">연결</span>
+        </div>
+        <div class="bg-white rounded-xl p-3 border border-slate-200 flex-1 space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800">천주산 2030 크루방 (6명)</span>
+            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">GPS 동의 ON</span>
+          </div>
+          <div class="space-y-1.5 bg-slate-50 p-2 rounded-lg text-[10px]">
+            <div class="bg-white p-1.5 rounded border border-slate-200"><strong>다현:</strong> 입구 주차장 도착했어요!</div>
+            <div class="bg-forest-700 text-white p-1.5 rounded ml-4"><strong>나:</strong> 저도 5분 뒤 도착합니다 🙌</div>
+            <div class="bg-white p-1.5 rounded border border-slate-200"><strong>민규:</strong> 하산 후 역까지 택시 같이 타요</div>
+          </div>
+          <div class="text-[10px] text-slate-500">• 빠른 상태: 정상 도착 / 휴식 중 / 택시 동행</div>
+          <div class="w-full py-2 rounded-lg bg-slate-900 text-white text-center font-bold text-[11px]">
+            산행 안전·위치 지도 보기 →
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="bg-sand rounded-2xl p-3 border border-slate-200 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-extrabold text-forest-800">STEP 4. GPS 안전 · 고도 공지</span>
+          <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full">안전</span>
+        </div>
+        <div class="bg-white rounded-xl p-3 border border-slate-200 flex-1 space-y-2 text-xs">
+          <div class="bg-amber-50 border border-amber-300 rounded-lg p-2 text-[10px] text-amber-900">
+            <strong>⚠️ 고지대 통신 취약 구간 안내:</strong><br/>전파로 인해 서버 통신이 원활하지 않을 수 있음 (오프라인 데이터 안내)
+          </div>
+          <div class="bg-[#e6f0e6] rounded-lg p-2.5 border border-slate-200 text-[10px] space-y-1">
+            <div class="font-bold text-forest-900">🗺️ 통합 산행 안전 지도</div>
+            <div class="text-red-700 font-semibold">• 사고 다발지역 알림 (급경사 주의)</div>
+            <div class="text-sky-700 font-semibold">• 전망 쉼터·화장실·구급함 안내</div>
+            <div class="text-violet-700 font-semibold">• 동의 기반 크루원 위치 표시</div>
+          </div>
+          <div class="w-full py-1.5 rounded-lg bg-red-600 text-white text-center font-bold text-[10px]">
+            🚨 119 긴급 신고 · 국가지점번호 확인
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MODALS (SOS, TRAIL EVENT, GEAR, DEMO GUIDE) ==================== -->
+  <div id="modal-backdrop" onclick="closeAllModals()" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 flex items-center justify-center p-4">
+    <!-- Demo Guide Modal -->
+    <div id="modal-guide" onclick="event.stopPropagation()" class="hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-slate-900 text-base">해커톤 시연 & PRD 활용 가이드</h3>
+        <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+      </div>
+      <ul class="text-xs text-slate-600 space-y-2 leading-relaxed">
+        <li><strong>1. 핵심 4단계 시연:</strong> 홈에서 코스를 누르면 상세 → 크루 소통방 → 산행 안전 지도까지 자연스럽게 이어집니다.</li>
+        <li><strong>2. 고지대 통신 공지 시연:</strong> 4단계 지도 화면 하단의 <strong>고도 슬라이더를 650m 이상</strong>으로 올리면 통신 취약 구간 사전 안내 배너가 작동합니다.</li>
+        <li><strong>3. PRD 캡처:</strong> 상단의 <strong>[4단계 한눈에 보기]</strong> 버튼을 누르면 문서 첨부용 화면 흐름도를 한 번에 캡처할 수 있습니다.</li>
+      </ul>
+      <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">확인</button>
+    </div>
+
+    <!-- SOS Modal -->
+    <div id="modal-sos" onclick="event.stopPropagation()" class="hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-red-700 text-base">🚨 산행 비상 안내 & 국가지점번호</h3>
+        <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+      </div>
+      <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-900 space-y-1">
+        <div class="font-bold">현재 추정 국가지점번호 (오프라인 좌표 기준)</div>
+        <div class="font-mono text-sm font-extrabold text-red-700">마산 다바 8412 9104 (천주산 능선 부근)</div>
+        <p class="text-[11px] text-red-700 pt-1">데이터 통신이 불안정할 경우 음성 119 신고 또는 단말기 위성/긴급 SOS 기능을 우선 활용하세요.</p>
+      </div>
+      <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs">닫기</button>
+    </div>
+
+    <!-- Trail Event Modal -->
+    <div id="modal-trail-event" onclick="event.stopPropagation()" class="hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-slate-900 text-base">🏃 경남 트레일 대회 & 산책로 (확장)</h3>
+        <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-600">핵심 산행 기능 이후 단계적으로 연계되는 부가 콘텐츠입니다.</p>
+      <div class="space-y-2 text-xs">
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200">
+          <div class="font-bold text-amber-900">2026 경남 황매산 트레일 러닝 챌린지</div>
+          <div class="text-[11px] text-amber-800 mt-0.5">12km 입문 코스 / 25km 능선 코스 · 대회 코스 사전 답사 크루 연계</div>
+        </div>
+        <div class="p-3 rounded-xl bg-forest-50 border border-forest-200">
+          <div class="font-bold text-forest-900">창원 용지호수·광려천 가벼운 산책로</div>
+          <div class="text-[11px] text-forest-800 mt-0.5">퇴근 후 40~50분 도심형 둘레길 추천</div>
+        </div>
+      </div>
+      <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">닫기</button>
+    </div>
+
+    <!-- Gear Rental Modal -->
+    <div id="modal-gear" onclick="event.stopPropagation()" class="hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-slate-900 text-base">🎒 등산 장비 대여·공유 (후속 확장)</h3>
+        <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-600">초기 장비 구매 부담을 낮추기 위한 후속 확장 기능 미리보기입니다.</p>
+      <div class="space-y-2 text-xs">
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div>
+            <div class="font-bold text-slate-800">경량 두랄루민 등산 스틱 (1쌍)</div>
+            <div class="text-[11px] text-slate-500">창원·마산 거점 픽업 · 1일 4,000원</div>
+          </div>
+          <span class="text-[11px] font-bold text-forest-700 bg-forest-100 px-2.5 py-1 rounded-lg">예약 예정</span>
+        </div>
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div>
+            <div class="font-bold text-slate-800">당일 산행용 22L 경량 배낭</div>
+            <div class="text-[11px] text-slate-500">레인커버 포함 · 1일 6,000원</div>
+          </div>
+          <span class="text-[11px] font-bold text-forest-700 bg-forest-100 px-2.5 py-1 rounded-lg">예약 예정</span>
+        </div>
+      </div>
+      <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">닫기</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+    알림 메시지
+  </div>
+
+  <script>
+    // Curated Gyeongnam Mountain & Trail Data (Manual Curation Sample)
+    const COURSES = [
+      {
+        id: 'cheonjusan',
+        title: '창원 천주산 진달래길 코스',
+        region: '경남 창원시 의창구·마산회원구',
+        difficulty: '초급',
+        badgeClass: 'bg-emerald-100 text-emerald-800',
+        distance: '4.2 km',
+        duration: '1시간 40분',
+        elevation: '638 m',
+        crewCount: 6,
+        tags: ['입문 추천', '능선 전망', '대중교통 접근'],
+        desc: '완만한 흙길과 탁 트인 능선 전망이 어우러져 등산 초보 청년도 부담 없이 즐길 수 있는 대표 힐링 코스입니다.',
+        cautions: [
+          '하산 직전 자갈길 구간 미끄럼 주의 (접지력 좋은 운동화/등산화 권장)',
+          '입산 전 코스·휴게시설·사고 다발지역 데이터가 기기에 자동 저장됩니다.'
+        ]
+      },
+      {
+        id: 'muhaksan',
+        title: '마산 무학산 둘레·정상 코스',
+        region: '경남 창원시 마산합포구',
+        difficulty: '중급',
+        badgeClass: 'bg-amber-100 text-amber-800',
+        distance: '6.8 km',
+        duration: '2시간 50분',
+        elevation: '761 m',
+        crewCount: 8,
+        tags: ['마산만 야경·조망', '계단 구간', '크루 인기'],
+        desc: '마산만을 내려다보는 시원한 조망과 적당한 오르막이 매력적인 경남 청년 인기 크루 코스입니다.',
+        cautions: [
+          '정상 부근 데크 계단 및 강풍 시 체온 저하 주의 (바람막이 지참)',
+          '해발 650m 이상 구간부터 전파가 약해질 수 있어 오프라인 안내로 전환됩니다.'
+        ]
+      },
+      {
+        id: 'hwangmaesan',
+        title: '합천 황매산 능선 종주 코스',
+        region: '경남 합천군 가회면·산청군',
+        difficulty: '고급',
+        badgeClass: 'bg-rose-100 text-rose-800',
+        distance: '9.5 km',
+        duration: '4시간 10분',
+        elevation: '1,113 m',
+        crewCount: 4,
+        tags: ['억새·철쭉 명소', '고지대 종주', '장비 필수'],
+        desc: '탁 트인 고원 능선을 따라 걷는 장거리 산행 코스로, 충분한 수분과 체력 안배가 필요한 상급자 추천 코스입니다.',
+        cautions: [
+          '해발 1,000m 이상 능선 구간 통신 음영 가능성 높음 — 동행 크루 간격 유지 필수',
+          '급경사 암반 구간 추락·미끄럼 주의 및 스틱 사용 권장'
+        ]
+      },
+      {
+        id: 'yongji',
+        title: '창원 용지호수·광려천 수변 산책길',
+        region: '경남 창원시 성산구',
+        difficulty: '산책로',
+        badgeClass: 'bg-sky-100 text-sky-800',
+        distance: '3.1 km',
+        duration: '50분',
+        elevation: '45 m',
+        crewCount: 11,
+        tags: ['부가 산책로', '퇴근 후 가볍게', '운동화 OK'],
+        desc: '등산이 부담스러운 날 가볍게 걸으며 소통할 수 있는 경남 도심형 수변 산책 코스입니다.',
+        cautions: [
+          '야간 산책 시 자전거 도로와 보행로 구분 구간 주의'
+        ]
+      }
+    ];
+
+    let selectedCourse = COURSES[0];
+    let currentFilter = '전체';
+    let isJoinedCrew = false;
+    let isGpsConsentOn = true;
+    let isWeakSignalChat = false;
+
+    let chatMessages = [
+      { sender: '다현 (크루장)', text: '이번 주 토요일 오전 9시 입구 매표소 앞에서 만나요!', time: '오전 8:42', isMe: false, queued: false },
+      { sender: '민규', text: '물 500ml랑 바람막이 챙겼습니다. 초보라 잘 부탁드려요!', time: '오전 8:45', isMe: false, queued: false },
+      { sender: '승보 (나)', text: '코스 데이터 미리 저장 완료했어요. 안전하게 다녀옵시다!', time: '오전 8:47', isMe: true, queued: false }
+    ];
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.remove('opacity-0');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => el.classList.add('opacity-0'), 2400);
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[char]);
+    }
+
+    function setViewMode(mode) {
+      const singleEl = document.getElementById('single-mode-container');
+      const flowEl = document.getElementById('flow-mode-container');
+      const btnSingle = document.getElementById('btn-mode-single');
+      const btnFlow = document.getElementById('btn-mode-flow');
+
+      if (mode === 'single') {
+        singleEl.classList.remove('hidden');
+        flowEl.classList.add('hidden');
+        btnSingle.className = 'flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition bg-forest-700 text-white shadow-sm';
+        btnFlow.className = 'flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 hover:text-slate-900';
+      } else {
+        singleEl.classList.add('hidden');
+        flowEl.classList.remove('hidden');
+        btnFlow.className = 'flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition bg-forest-700 text-white shadow-sm';
+        btnSingle.className = 'flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 hover:text-slate-900';
+      }
+    }
+
+    function selectCondition(label, diff) {
+      document.getElementById('condition-badge').textContent = label;
+      document.querySelectorAll('.cond-btn').forEach(btn => {
+        btn.className = 'cond-btn py-2 px-2 rounded-xl font-medium border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition';
+      });
+      event.currentTarget.className = 'cond-btn py-2 px-2 rounded-xl font-semibold border border-forest-600 bg-forest-50 text-forest-800 transition';
+      filterCourses(diff);
+      showToast(`'${label}' 컨디션에 맞는 ${diff} 코스를 추천합니다.`);
+    }
+
+    function filterCourses(diff) {
+      currentFilter = diff;
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        if (btn.textContent.startsWith(diff)) {
+          btn.className = 'diff-btn px-3 py-1.5 rounded-full text-xs font-bold bg-forest-700 text-white shrink-0';
+        } else {
+          btn.className = 'diff-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 shrink-0';
+        }
+      });
+      renderCourses();
+    }
+
+    function renderCourses() {
+      const container = document.getElementById('course-list');
+      const filtered = currentFilter === '전체'
+        ? COURSES
+        : COURSES.filter(c => c.difficulty === currentFilter);
+
+      container.innerHTML = filtered.map(c => `
+        <div onclick="selectCourse('${c.id}')" class="cursor-pointer bg-white hover:border-forest-500 border border-slate-200 rounded-2xl p-3.5 shadow-sm transition group">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] text-slate-400 font-medium">${c.region}</span>
+              <h4 class="text-sm font-extrabold text-slate-900 group-hover:text-forest-700 transition">${c.title}</h4>
+            </div>
+            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${c.badgeClass}">${c.difficulty}</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-slate-600 mt-2 font-medium">
+            <span>📏 ${c.distance}</span>
+            <span>⏱️ ${c.duration}</span>
+            <span>⛰️ ${c.elevation}</span>
+          </div>
+          <div class="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100">
+            <div class="flex gap-1 flex-wrap">
+              ${c.tags.map(t => `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#${t}</span>`).join('')}
+            </div>
+            <span class="text-[11px] font-bold text-forest-700 shrink-0">상세 보기 →</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectCourse(id) {
+      const found = COURSES.find(c => c.id === id);
+      if (!found) return;
+      selectedCourse = found;
+      isJoinedCrew = false;
+      updateCourseBoundUI();
+      goToStep(2);
+    }
+
+    function updateCourseBoundUI() {
+      // Step 2 UI
+      document.getElementById('detail-region').textContent = selectedCourse.region;
+      document.getElementById('detail-title').textContent = selectedCourse.title;
+      document.getElementById('detail-desc').textContent = selectedCourse.desc;
+      document.getElementById('detail-distance').textContent = selectedCourse.distance;
+      document.getElementById('detail-duration').textContent = selectedCourse.duration;
+      document.getElementById('detail-elevation').textContent = selectedCourse.elevation;
+      const badge = document.getElementById('detail-diff-badge');
+      badge.textContent = selectedCourse.difficulty;
+      badge.className = `text-xs font-bold px-2.5 py-0.5 rounded-full ${selectedCourse.badgeClass}`;
+
+      document.getElementById('detail-cautions').innerHTML = selectedCourse.cautions.map(item => `
+        <li class="flex items-start gap-2"><span class="text-amber-500 font-bold">•</span> <span>${item}</span></li>
+      `).join('');
+
+      // Step 3 UI
+      document.getElementById('chat-room-title').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 2030 크루방`;
+      document.getElementById('crew-count').textContent = `${selectedCourse.crewCount + (isJoinedCrew ? 1 : 0)}명`;
+      const joinBtn = document.getElementById('btn-join-crew');
+      if (isJoinedCrew) {
+        joinBtn.textContent = '✓ 합류 완료';
+        joinBtn.className = 'px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold transition';
+      } else {
+        joinBtn.textContent = '크루 합류하기';
+        joinBtn.className = 'px-3 py-1.5 rounded-xl bg-forest-700 text-white text-xs font-bold shadow-sm transition';
+      }
+
+      // Step 4 UI
+      document.getElementById('map-course-name').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 실시간 안전 지도`;
+    }
+
+    function goToStep(step) {
+      [1, 2, 3, 4].forEach(n => {
+        const sec = document.getElementById(`screen-${n}`);
+        const pill = document.getElementById(`step-pill-${n}`);
+        const nav = document.getElementById(`nav-btn-${n}`);
+        if (n === step) {
+          sec.classList.remove('hidden');
+          pill.className = 'step-pill py-1.5 px-1 rounded-lg font-bold text-center transition bg-white text-forest-800 shadow-sm';
+          nav.className = 'nav-btn flex flex-col items-center justify-center text-forest-700 font-bold';
+        } else {
+          sec.classList.add('hidden');
+          pill.className = 'step-pill py-1.5 px-1 rounded-lg font-medium text-center transition text-forest-100 hover:bg-white/10';
+          nav.className = 'nav-btn flex flex-col items-center justify-center text-slate-400 font-medium';
+        }
+      });
+      document.getElementById('screen-body').scrollTop = 0;
+      if (step === 3) renderChat();
+    }
+
+    function toggleJoinCrew() {
+      isJoinedCrew = !isJoinedCrew;
+      updateCourseBoundUI();
+      if (isJoinedCrew) {
+        chatMessages.push({
+          sender: '시스템',
+          text: '승보님이 크루에 합류했습니다. 산행 중 안전 수칙을 확인해 주세요!',
+          time: '방금',
+          isMe: false,
+          queued: false
+        });
+        renderChat();
+        showToast('크루 합류가 완료되었습니다!');
+      }
+    }
+
+    function toggleGpsConsent() {
+      isGpsConsentOn = !isGpsConsentOn;
+      const btn = document.getElementById('toggle-gps-consent');
+      const sub = document.getElementById('gps-consent-sub');
+      const crewMarker = document.getElementById('map-crew-marker');
+      if (isGpsConsentOn) {
+        btn.className = 'w-11 h-6 rounded-full bg-forest-600 p-0.5 transition flex items-center justify-end';
+        sub.textContent = 'ON — 지도에서 크루원과 서로의 마지막 확인 위치를 봅니다';
+        crewMarker.classList.remove('hidden');
+        showToast('크루 GPS 위치 공유에 동의했습니다.');
+      } else {
+        btn.className = 'w-11 h-6 rounded-full bg-slate-300 p-0.5 transition flex items-center justify-start';
+        sub.textContent = 'OFF — 내 위치가 크루에게 공유되지 않습니다';
+        crewMarker.classList.add('hidden');
+        showToast('크루 GPS 위치 공유가 해제되었습니다.');
+      }
+    }
+
+    function toggleWeakSignalChat() {
+      isWeakSignalChat = !isWeakSignalChat;
+      const btn = document.getElementById('btn-sim-weak-signal');
+      if (isWeakSignalChat) {
+        btn.textContent = '통신 약함 (큐 대기)';
+        btn.className = 'text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800';
+        showToast('전파 약함 모드: 메시지가 로컬 큐에 임시 저장됩니다.');
+      } else {
+        btn.textContent = '정상 통신 중';
+        btn.className = 'text-[11px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700';
+        // Flush queued messages
+        let flushed = false;
+        chatMessages.forEach(m => {
+          if (m.queued) {
+            m.queued = false;
+            flushed = true;
+          }
+        });
+        renderChat();
+        if (flushed) showToast('연결 복구! 대기 중이던 메시지가 자동 전송되었습니다.');
+      }
+    }
+
+    function renderChat() {
+      const box = document.getElementById('chat-messages');
+      box.innerHTML = chatMessages.map(m => {
+        if (m.sender === '시스템') {
+          return `<div class="text-center"><span class="inline-block text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">${escapeHTML(m.text)}</span></div>`;
+        }
+        if (m.isMe) {
+          return `
+            <div class="flex flex-col items-end">
+              <div class="bg-forest-700 text-white text-xs px-3 py-2 rounded-2xl rounded-tr-sm max-w-[82%] shadow-xs">
+                ${escapeHTML(m.text)}
+              </div>
+              <span class="text-[10px] mt-0.5 ${m.queued ? 'text-amber-600 font-bold' : 'text-slate-400'}">
+                ${m.queued ? '⏳ 전파 약함 · 로컬 임시 저장됨' : escapeHTML(m.time)}
+              </span>
+            </div>
+          `;
+        }
+        return `
+          <div class="flex flex-col items-start">
+            <span class="text-[10px] font-bold text-slate-600 mb-0.5">${escapeHTML(m.sender)}</span>
+            <div class="bg-slate-100 text-slate-800 text-xs px-3 py-2 rounded-2xl rounded-tl-sm max-w-[82%]">
+              ${escapeHTML(m.text)}
+            </div>
+            <span class="text-[10px] text-slate-400 mt-0.5">${escapeHTML(m.time)}</span>
+          </div>
+        `;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function handleSendChat(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      chatMessages.push({
+        sender: '승보 (나)',
+        text,
+        time: '방금',
+        isMe: true,
+        queued: isWeakSignalChat
+      });
+      input.value = '';
+      renderChat();
+      if (isWeakSignalChat) {
+        showToast('통신 취약 구간: 로컬 큐에 저장 후 연결 시 자동 전송됩니다.');
+      }
+    }
+
+    function sendQuickStatus(text) {
+      chatMessages.push({
+        sender: '승보 (나)',
+        text,
+        time: '방금',
+        isMe: true,
+        queued: isWeakSignalChat
+      });
+      renderChat();
+      showToast(isWeakSignalChat ? '경량 상태 패킷 임시 저장됨' : '빠른 상태가 크루방에 공유되었습니다.');
+    }
+
+    function updateAltitude(val) {
+      const alt = Number(val);
+      const readout = document.getElementById('altitude-readout');
+      const banner = document.getElementById('altitude-warning-banner');
+      const signalText = document.getElementById('status-signal-text');
+      const userMarker = document.getElementById('map-user-marker');
+
+      readout.textContent = `해발 ${alt.toLocaleString()}m`;
+
+      // Move user marker along trail based on altitude
+      const ratio = (alt - 200) / 900; // 0 to 1
+      const x = Math.round(45 + ratio * 165);
+      const y = Math.round(168 - ratio * 102);
+      userMarker.setAttribute('transform', `translate(${x}, ${y})`);
+
+      if (alt >= 650) {
+        banner.classList.remove('hidden');
+        readout.className = 'text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800';
+        signalText.textContent = '전파 약함 (오프라인)';
+        signalText.className = 'text-[10px] text-amber-300 font-semibold';
+      } else {
+        banner.classList.add('hidden');
+        readout.className = 'text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-forest-100 text-forest-800';
+        signalText.textContent = 'LTE 양호';
+        signalText.className = 'text-[10px] text-emerald-300 font-semibold';
+      }
+    }
+
+    function openModal(id) {
+      document.getElementById('modal-backdrop').classList.remove('hidden');
+      ['modal-guide', 'modal-sos', 'modal-trail-event', 'modal-gear'].forEach(m => {
+        document.getElementById(m).classList.toggle('hidden', m !== id);
+      });
+    }
+
+    function closeAllModals() {
+      document.getElementById('modal-backdrop').classList.add('hidden');
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCourses();
+      updateCourseBoundUI();
+      renderChat();
+    });
+  </script>
+</body>
+</html>
