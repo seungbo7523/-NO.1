@@ -169,7 +169,7 @@ sequenceDiagram
     W->>S: JWT로 방 참여자 조회/가입
     S->>D: 사용자 ID·코스 ID 정책 검사
     D-->>W: 참여 성공
-    W->>S: 최근 메시지 최대 100건 조회
+    W->>S: 메시지 최대 100건 조회 (V1.0은 오래된 순)
     W->>R: 해당 코스 메시지 INSERT 구독
     H->>W: 메시지 전송
     W->>S: 메시지 INSERT (JWT)
@@ -196,7 +196,7 @@ sequenceDiagram
 | --- | --- | --- | --- |
 | 내 방 참여 확인 | `GET /rest/v1/course_room_members?select=user_id&course_id=eq.{courseId}&user_id=eq.{userId}` | 유효한 Clerk JWT. RLS는 본인 `user_id`만 허용 | `200` `[{ "user_id": "user_..." }]`; 미참여면 `200 []` |
 | 방 참여 | `POST /rest/v1/course_room_members` JSON `{course_id,user_id,display_name}` | `user_id == JWT sub`; 허용된 코스 ID; 이름 1–30자; 이미 가입한 경우 unique 제약 | `201` (return representation 요청 시 생성 행) |
-| 최근 메시지 | `GET /rest/v1/course_room_messages?select=id,course_id,user_id,display_name,body,created_at&course_id=eq.{courseId}&order=created_at.asc&limit=100` | 유효 JWT + 해당 방 참여자 RLS | `200` 메시지 배열. 현재 코드의 오름차순/최대 100건과 일치 |
+| 초기 메시지 이력 | `GET /rest/v1/course_room_messages?select=id,course_id,user_id,display_name,body,created_at&course_id=eq.{courseId}&order=created_at.asc&limit=100` | 유효 JWT + 해당 방 참여자 RLS | `200` 메시지 배열. **V1.0 코드는 오름차순 후 limit 100이므로 최근 100건이 아니라 해당 방의 가장 오래된 메시지 최대 100건을 조회한다.** 최근 메시지가 필요하면 내림차순 limit 후 화면 표시 직전 역순 정렬로 변경해야 하며 현재는 미구현 |
 | 메시지 전송 | `POST /rest/v1/course_room_messages?select=id,course_id,user_id,display_name,body,created_at` JSON `{course_id,user_id,display_name,body}` + `Prefer: return=representation` | `user_id == JWT sub`; 방 참여자; 이름 1–30자; 본문 1–1,000자 | `201` 생성된 메시지 객체 |
 | 메시지 실시간 수신 | Supabase Realtime `postgres_changes`, `event=INSERT`, `table=course_room_messages`, `filter=course_id=eq.{courseId}` | 로그인 JWT와 메시지 테이블 RLS로 필터 | 데이터 변경 payload `{eventType:"INSERT", new:{id,course_id,user_id,display_name,body,created_at}}`; HTTP 응답 없음 |
 | 코스 추천 | `POST /functions/v1/recommend-courses` JSON 아래 예시 | 제안 API. 익명 조건 입력만 허용, 서버 검증 및 요청 제한 | `200` 코스 ID가 유효한 정형 추천 응답. 미구현 |
