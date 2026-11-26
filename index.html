@@ -144,7 +144,7 @@
               3. 크루소통
             </button>
             <button onclick="goToStep(4)" id="step-pill-4" class="step-pill py-1.5 px-1 rounded-lg font-medium text-center transition text-forest-100 hover:bg-white/10">
-              4. 안전지도
+              4. 안전정보
             </button>
           </div>
         </div>
@@ -305,7 +305,7 @@
                 <span>→</span>
               </button>
               <button onclick="goToStep(4)" class="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 text-forest-800 border border-forest-300 font-bold text-xs transition flex items-center justify-center gap-1.5">
-                <span>🗺️ 바로 산행 안전·위치 지도 확인하기</span>
+                <span>🧭 산행 안전 정보 보기</span>
               </button>
             </div>
           </section>
@@ -373,13 +373,23 @@
 
             <!-- Next Step CTA -->
             <button onclick="goToStep(4)" class="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
-              <span>📍 4단계: 산행 안전·위치 지도 보기</span>
+              <span>🧭 4단계: 산행 안전 정보 보기</span>
               <span>→</span>
             </button>
           </section>
 
-          <!-- ==================== STEP 4: GPS SAFETY & ALTITUDE WARNING MAP ==================== -->
+          <!-- ==================== STEP 4: GPS SAFETY & ALTITUDE WARNINGS ==================== -->
           <section id="screen-4" class="hidden space-y-3">
+            <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm flex items-center justify-between gap-3">
+              <div>
+                <h2 class="text-sm font-extrabold text-slate-900">산행 안전 정보</h2>
+                <p class="text-[10px] text-slate-500 mt-0.5">시연용 고도 안내와 비상 연락 정보를 확인하세요.</p>
+              </div>
+              <button onclick="openModal('modal-sos')" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-sm">
+                🚨 비상 안내
+              </button>
+            </div>
+
             <!-- High-Altitude Communication Weak Zone Banner (Dynamic) -->
             <div id="altitude-warning-banner" class="hidden bg-amber-50 border-l-4 border-amber-500 rounded-xl p-3 shadow-sm">
               <div class="flex items-start gap-2">
@@ -390,28 +400,6 @@
                     시연용 고도 기준 알림입니다. 실제 통신 상태나 오프라인 코스·안전 데이터는 확인하지 않습니다.
                   </p>
                 </div>
-              </div>
-            </div>
-
-            <!-- Google Satellite Map -->
-            <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm">
-              <div class="flex items-center justify-between mb-2">
-                <div>
-                  <h2 id="map-course-name" class="text-sm font-extrabold text-slate-900">천주산 주변 위성 지도</h2>
-                  <p class="text-[10px] text-slate-500">Google 위성사진 · 선택 코스 주변 위치 참고</p>
-                </div>
-                <button onclick="openModal('modal-sos')" class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-sm">
-                  🚨 119 / 지점번호
-                </button>
-              </div>
-              <div id="course-map" role="application" aria-label="선택한 산 코스 주변 Google 위성 지도" class="w-full h-64 rounded-xl overflow-hidden border border-slate-200 bg-slate-100"></div>
-              <div class="flex items-start justify-between gap-2 mt-2">
-                <p id="map-status" role="status" class="text-[10px] text-slate-500">
-                  지도 위치는 코스 주변 참고 지점입니다. 실제 산행 경로와 현재 위치를 표시하지 않습니다.
-                </p>
-                <a id="open-google-map" href="https://maps.google.com/" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[10px] font-bold text-forest-700 hover:underline">
-                  Google 지도 열기 ↗
-                </a>
               </div>
             </div>
 
@@ -503,7 +491,7 @@
           </button>
           <button onclick="goToStep(4)" id="nav-btn-4" class="nav-btn flex flex-col items-center justify-center text-slate-400 font-medium">
             <span class="text-base leading-none">🧭</span>
-            <span class="text-[10px] mt-1">안전지도</span>
+            <span class="text-[10px] mt-1">안전정보</span>
           </button>
           <button onclick="openMyPage()" id="nav-btn-5" class="nav-btn flex flex-col items-center justify-center text-slate-400 font-medium">
             <span class="text-base leading-none">👤</span>
@@ -602,7 +590,7 @@
           </div>
           <div class="text-[10px] text-slate-500">• 빠른 상태: 정상 도착 / 휴식 중 / 택시 동행</div>
           <div class="w-full py-2 rounded-lg bg-slate-900 text-white text-center font-bold text-[11px]">
-            산행 안전·위치 지도 보기 →
+            산행 안전 정보 보기 →
           </div>
         </div>
       </div>
@@ -618,7 +606,7 @@
             <strong>⚠️ 시연용 고도 알림:</strong><br/>실제 통신 상태와 오프라인 안전 데이터는 확인하지 않습니다.
           </div>
           <div class="bg-[#e6f0e6] rounded-lg p-2.5 border border-slate-200 text-[10px] space-y-1">
-            <div class="font-bold text-forest-900">🗺️ 코스 주변 위성사진 (API 키 필요)</div>
+            <div class="font-bold text-forest-900">🧭 산행 안전 정보</div>
             <div class="text-red-700 font-semibold">• 사고 다발지역 데이터 미연동</div>
             <div class="text-sky-700 font-semibold">• 휴게시설·구급함 정보 미연동</div>
             <div class="text-violet-700 font-semibold">• 실시간 GPS 위치 공유 미연동</div>
@@ -685,8 +673,8 @@
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
       </div>
       <ul class="text-xs text-slate-600 space-y-2 leading-relaxed">
-        <li><strong>1. 핵심 4단계 시연:</strong> 홈에서 코스를 누르면 상세 → 크루 소통방 → 산행 안전 지도까지 자연스럽게 이어집니다.</li>
-        <li><strong>2. 고지대 통신 공지 시연:</strong> 4단계 지도 화면 하단의 <strong>고도 슬라이더를 650m 이상</strong>으로 올리면 통신 취약 구간 사전 안내 배너가 작동합니다.</li>
+        <li><strong>1. 핵심 4단계 시연:</strong> 홈에서 코스를 누르면 상세 → 크루 소통방 → 산행 안전 정보까지 자연스럽게 이어집니다.</li>
+        <li><strong>2. 고지대 통신 공지 시연:</strong> 4단계 화면의 <strong>고도 슬라이더를 650m 이상</strong>으로 올리면 통신 취약 구간 사전 안내 배너가 작동합니다.</li>
         <li><strong>3. PRD 캡처:</strong> 상단의 <strong>[4단계 한눈에 보기]</strong> 버튼을 누르면 문서 첨부용 화면 흐름도를 한 번에 캡처할 수 있습니다.</li>
       </ul>
       <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">확인</button>
@@ -770,8 +758,6 @@
         distance: '4.2 km',
         duration: '1시간 40분',
         elevation: '638 m',
-        mapCenter: { lat: 35.287, lng: 128.609 },
-        mapZoom: 14,
         crewCount: 6,
         tags: ['입문 추천', '능선 전망', '대중교통 접근'],
         desc: '완만한 흙길과 탁 트인 능선 전망이 어우러져 등산 초보 청년도 부담 없이 즐길 수 있는 대표 힐링 코스입니다.',
@@ -789,8 +775,6 @@
         distance: '6.8 km',
         duration: '2시간 50분',
         elevation: '761 m',
-        mapCenter: { lat: 35.210966, lng: 128.561859 },
-        mapZoom: 14,
         crewCount: 8,
         tags: ['마산만 야경·조망', '계단 구간', '크루 인기'],
         desc: '마산만을 내려다보는 시원한 조망과 적당한 오르막이 매력적인 경남 청년 인기 크루 코스입니다.',
@@ -808,8 +792,6 @@
         distance: '9.5 km',
         duration: '4시간 10분',
         elevation: '1,113 m',
-        mapCenter: { lat: 35.49407, lng: 127.97461 },
-        mapZoom: 14,
         crewCount: 4,
         tags: ['억새·철쭉 명소', '고지대 종주', '장비 필수'],
         desc: '탁 트인 고원 능선을 따라 걷는 장거리 산행 코스로, 충분한 수분과 체력 안배가 필요한 상급자 추천 코스입니다.',
@@ -827,8 +809,6 @@
         distance: '3.1 km',
         duration: '50분',
         elevation: '45 m',
-        mapCenter: { lat: 35.2323, lng: 128.682 },
-        mapZoom: 16,
         crewCount: 11,
         tags: ['부가 산책로', '퇴근 후 가볍게', '운동화 OK'],
         desc: '등산이 부담스러운 날 가볍게 걸으며 소통할 수 있는 경남 도심형 수변 산책 코스입니다.',
@@ -840,7 +820,6 @@
 
     const SUPABASE_URL = 'https://vfhjvelxirfgastdqohq.supabase.co';
     const SUPABASE_PUBLIC_KEY = 'sb_publishable_n5qdZiWcLJ9oA6swElKrBg_venzzx-O';
-    const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
 
     let selectedCourse = COURSES[0];
     let currentFilter = '전체';
@@ -854,11 +833,6 @@
     let chatSubscription = null;
     let chatMessages = [];
     let authMode = 'signin';
-    let googleMapsLoader = null;
-    let courseMap = null;
-    let courseMapMarker = null;
-    let courseMapInitializing = false;
-    let googleMapsAuthFailed = false;
     let activeTracking = null;
     let trackingReady = false;
     let trackingBusy = false;
@@ -1004,99 +978,6 @@
 
       // Step 3 UI
       document.getElementById('chat-room-title').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 2030 크루방`;
-
-      // Step 4 UI
-      document.getElementById('map-course-name').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 주변 위성 지도`;
-      updateCourseMapLocation();
-    }
-
-    function setCourseMapStatus(message, isError = false) {
-      const status = document.getElementById('map-status');
-      status.textContent = message;
-      status.className = `text-[10px] ${isError ? 'text-red-700' : 'text-slate-500'}`;
-    }
-
-    function updateCourseMapLocation() {
-      if (!selectedCourse?.mapCenter) return;
-      const { lat, lng } = selectedCourse.mapCenter;
-      document.getElementById('open-google-map').href =
-        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`;
-      if (courseMap && courseMapMarker) {
-        courseMap.setCenter(selectedCourse.mapCenter);
-        courseMap.setZoom(selectedCourse.mapZoom);
-        courseMapMarker.setPosition(selectedCourse.mapCenter);
-        courseMapMarker.setTitle(selectedCourse.title);
-      }
-    }
-
-    function loadGoogleMaps() {
-      if (window.google?.maps) return Promise.resolve();
-      if (googleMapsLoader) return googleMapsLoader;
-      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
-        return Promise.reject(new Error('Google Maps API 키가 설정되지 않았습니다.'));
-      }
-
-      googleMapsLoader = new Promise((resolve, reject) => {
-        const callbackName = 'onGoogleMapsLoaded';
-        window[callbackName] = () => {
-          delete window[callbackName];
-          resolve();
-        };
-        window.gm_authFailure = () => {
-          googleMapsAuthFailed = true;
-          setCourseMapStatus('Google Maps API 인증에 실패했습니다. API 키, Maps JavaScript API 및 결제 설정을 확인해 주세요.', true);
-        };
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&callback=${callbackName}`;
-        script.async = true;
-        script.onerror = () => {
-          delete window[callbackName];
-          googleMapsLoader = null;
-          reject(new Error('Google Maps 스크립트를 불러오지 못했습니다.'));
-        };
-        document.head.appendChild(script);
-      });
-      return googleMapsLoader;
-    }
-
-    async function initializeCourseMap() {
-      updateCourseMapLocation();
-      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
-        setCourseMapStatus('Google Maps API 키 설정이 필요합니다. 키를 설정하면 선택 코스 주변 위성사진이 표시됩니다.');
-        return;
-      }
-      if (courseMap || courseMapInitializing) {
-        if (courseMap) google.maps.event.trigger(courseMap, 'resize');
-        return;
-      }
-
-      courseMapInitializing = true;
-      setCourseMapStatus('Google 위성사진을 불러오는 중입니다.');
-      try {
-        await loadGoogleMaps();
-        const mapElement = document.getElementById('course-map');
-        courseMap = new google.maps.Map(mapElement, {
-          center: selectedCourse.mapCenter,
-          zoom: selectedCourse.mapZoom,
-          mapTypeId: 'satellite',
-          streetViewControl: false,
-          mapTypeControl: true,
-          fullscreenControl: true
-        });
-        courseMapMarker = new google.maps.Marker({
-          map: courseMap,
-          position: selectedCourse.mapCenter,
-          title: selectedCourse.title
-        });
-        if (!googleMapsAuthFailed) {
-          setCourseMapStatus('선택 코스 주변의 참고 지점입니다. 검증된 산행 경로, 현재 위치 또는 안전·시설 정보를 표시하지 않습니다.');
-        }
-      } catch (error) {
-        console.error('Google Maps loading failed:', error);
-        setCourseMapStatus(`${error.message} Google 지도를 링크로 열어 위치를 확인할 수 있습니다.`, true);
-      } finally {
-        courseMapInitializing = false;
-      }
     }
 
     function requestCourseRoomEntry() {
@@ -1158,7 +1039,6 @@
       });
       document.getElementById('screen-body').scrollTop = 0;
       if (step === 3) renderChat();
-      if (step === 4) void initializeCourseMap();
     }
 
     function toggleGpsConsent() {
