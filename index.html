@@ -106,7 +106,7 @@
           <span>9:41</span>
           <span class="bg-forest-900/80 px-2.5 py-0.5 rounded-full text-[10px] tracking-tight text-forest-100">경상남도 스마트 산행 MVP</span>
           <div class="flex items-center gap-1.5">
-            <span id="status-signal-text" class="text-[10px] text-emerald-300 font-semibold">LTE 양호</span>
+            <span id="status-signal-text" class="text-[10px] text-emerald-300 font-semibold">시연 데이터</span>
             <span class="inline-block w-4 h-2.5 border border-white/80 rounded-sm p-[1px]">
               <span class="block h-full w-3/4 bg-emerald-400 rounded-[1px]"></span>
             </span>
@@ -144,7 +144,7 @@
               3. 크루소통
             </button>
             <button onclick="goToStep(4)" id="step-pill-4" class="step-pill py-1.5 px-1 rounded-lg font-medium text-center transition text-forest-100 hover:bg-white/10">
-              4. 안전지도
+              4. 안전정보
             </button>
           </div>
         </div>
@@ -257,35 +257,12 @@
                 </div>
               </div>
 
-              <!-- Stylized Elevation Profile SVG -->
-              <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70">
-                <div class="flex items-center justify-between text-[11px] mb-1.5">
-                  <span class="font-bold text-slate-700">고도 프로필 & 주요 거점</span>
-                  <span class="text-amber-600 font-semibold">능선 구간 전파 약함 주의</span>
+              <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70 flex items-center justify-between gap-3">
+                <div>
+                  <div class="text-[11px] font-bold text-slate-700">선택 코스 지형 단면</div>
+                  <p class="text-[10px] text-slate-500 mt-0.5">4단계 안전 정보에서 참고용 고도 윤곽을 확인하세요.</p>
                 </div>
-                <svg viewBox="0 0 300 75" class="w-full h-16 overflow-visible">
-                  <defs>
-                    <linearGradient id="elevGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#2d7a53" stop-opacity="0.35" />
-                      <stop offset="100%" stop-color="#2d7a53" stop-opacity="0.02" />
-                    </linearGradient>
-                  </defs>
-                  <!-- Warning Ridge Band -->
-                  <rect x="165" y="5" width="75" height="60" rx="4" fill="#fef3c7" opacity="0.8" />
-                  <text x="202" y="16" font-size="8" fill="#b45309" text-anchor="middle" font-weight="bold">고지대 통신주의</text>
-                  <!-- Elevation Path -->
-                  <path id="detail-elev-area" d="M10,65 Q75,55 120,38 T205,15 T290,62 L290,65 L10,65 Z" fill="url(#elevGrad)" />
-                  <path id="detail-elev-line" d="M10,65 Q75,55 120,38 T205,15 T290,62" fill="none" stroke="#1f6140" stroke-width="2.5" stroke-linecap="round" />
-                  <!-- Markers -->
-                  <circle cx="10" cy="65" r="3.5" fill="#1f6140" />
-                  <circle cx="120" cy="38" r="3.5" fill="#0284c7" />
-                  <circle cx="205" cy="15" r="4" fill="#dc2626" />
-                  <circle cx="290" cy="62" r="3.5" fill="#1f6140" />
-                  <text x="14" y="73" font-size="8" fill="#475569">입구</text>
-                  <text x="120" y="50" font-size="8" fill="#0284c7" text-anchor="middle">쉼터</text>
-                  <text x="205" y="27" font-size="8" fill="#dc2626" text-anchor="middle" font-weight="bold">정상</text>
-                  <text x="284" y="73" font-size="8" fill="#475569" text-anchor="end">하산</text>
-                </svg>
+                <button onclick="goToStep(4)" class="shrink-0 text-[10px] font-bold text-forest-700 hover:underline">단면 보기 →</button>
               </div>
             </div>
 
@@ -305,7 +282,7 @@
                 <span>→</span>
               </button>
               <button onclick="goToStep(4)" class="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 text-forest-800 border border-forest-300 font-bold text-xs transition flex items-center justify-center gap-1.5">
-                <span>🗺️ 바로 산행 안전·위치 지도 확인하기</span>
+                <span>🧭 산행 안전 정보 보기</span>
               </button>
             </div>
           </section>
@@ -327,20 +304,23 @@
                 </button>
               </div>
 
-              <!-- Consent-based GPS Sharing Toggle -->
+              <!-- Explicit consent for personal hike tracking -->
               <div class="flex items-center justify-between bg-forest-50/80 border border-forest-200/80 rounded-xl px-3 py-2">
                 <div>
-                  <div class="text-xs font-bold text-forest-900">크루 GPS 위치 공유 (시연용 설정)</div>
-                  <div id="gps-consent-sub" class="text-[10px] text-forest-700">실시간 GPS 위치 공유는 아직 연결되지 않았습니다</div>
+                  <div class="text-xs font-bold text-forest-900">본인 산행 GPS 기록</div>
+                  <div id="gps-consent-sub" class="text-[10px] text-forest-700">기본 꺼짐 · 크루에게 위치를 공유하지 않습니다</div>
                 </div>
-                <button id="toggle-gps-consent" onclick="toggleGpsConsent()" aria-label="GPS 위치 공유 동의 전환" class="w-11 h-6 rounded-full bg-forest-600 p-0.5 transition flex items-center justify-end">
-                  <span class="w-5 h-5 rounded-full bg-white shadow"></span>
-                </button>
+                <label for="gps-tracking-consent" class="flex items-center gap-2 text-[10px] font-bold text-forest-900">
+                  <span>동의</span>
+                  <input id="gps-tracking-consent" type="checkbox" onchange="toggleGpsConsent(this.checked)" aria-describedby="gps-consent-sub" class="h-4 w-4 accent-forest-700" />
+                </label>
               </div>
+              <p class="text-[10px] leading-relaxed text-slate-500">동의하고 시작 버튼을 눌러야 위치 권한을 요청합니다. 시작·종료 위치와 최고 고도만 본인 기록에 저장하며 이동 경로·크루 위치 공유는 제공하지 않습니다. 동의를 끄면 추가 위치 수집을 중단하고 종료 위치 없이 기록을 마칠 수 있습니다.</p>
 
             </div>
 
             <p id="chat-status" role="status" class="hidden text-[11px] rounded-xl px-3 py-2"></p>
+            <button id="retry-chat-connection" onclick="retryRoomConnection()" class="hidden w-full rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900">실시간 연결 다시 시도</button>
             <div class="bg-white rounded-2xl p-3 border border-slate-200 space-y-2">
               <p id="chat-tracking-active" class="text-xs font-bold text-slate-700">트래킹 기록 확인 중</p>
               <p id="chat-tracking-status" role="status" class="hidden text-xs"></p>
@@ -373,13 +353,23 @@
 
             <!-- Next Step CTA -->
             <button onclick="goToStep(4)" class="w-full py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
-              <span>📍 4단계: 산행 안전·위치 지도 보기</span>
+              <span>🧭 4단계: 산행 안전 정보 보기</span>
               <span>→</span>
             </button>
           </section>
 
-          <!-- ==================== STEP 4: GPS SAFETY & ALTITUDE WARNING MAP ==================== -->
+          <!-- ==================== STEP 4: GPS SAFETY & ALTITUDE WARNINGS ==================== -->
           <section id="screen-4" class="hidden space-y-3">
+            <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm flex items-center justify-between gap-3">
+              <div>
+                <h2 class="text-sm font-extrabold text-slate-900">산행 안전 정보</h2>
+                <p class="text-[10px] text-slate-500 mt-0.5">시연용 고도 안내와 비상 연락 정보를 확인하세요.</p>
+              </div>
+              <button onclick="openModal('modal-sos')" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-sm">
+                🚨 비상 안내
+              </button>
+            </div>
+
             <!-- High-Altitude Communication Weak Zone Banner (Dynamic) -->
             <div id="altitude-warning-banner" class="hidden bg-amber-50 border-l-4 border-amber-500 rounded-xl p-3 shadow-sm">
               <div class="flex items-start gap-2">
@@ -393,26 +383,102 @@
               </div>
             </div>
 
-            <!-- Google Satellite Map -->
-            <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm">
-              <div class="flex items-center justify-between mb-2">
+            <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm space-y-2">
+              <div class="flex items-start justify-between gap-2">
                 <div>
-                  <h2 id="map-course-name" class="text-sm font-extrabold text-slate-900">천주산 주변 위성 지도</h2>
-                  <p class="text-[10px] text-slate-500">Google 위성사진 · 선택 코스 주변 위치 참고</p>
+                  <h3 id="safety-map-title" class="text-sm font-extrabold text-slate-900">천주산 안전 안내도</h3>
+                  <p class="text-[10px] text-slate-500 mt-0.5">휴게시설 · 사고 구간 · 크루 위치 예시</p>
                 </div>
-                <button onclick="openModal('modal-sos')" class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-sm">
-                  🚨 119 / 지점번호
+                <button onclick="openModal('modal-sos')" class="shrink-0 rounded-xl bg-red-600 px-3 py-2 text-[11px] leading-tight font-extrabold text-white shadow-sm">
+                  🚨 119 / 지점번호 안내
                 </button>
               </div>
-              <div id="course-map" role="application" aria-label="선택한 산 코스 주변 Google 위성 지도" class="w-full h-64 rounded-xl overflow-hidden border border-slate-200 bg-slate-100"></div>
-              <div class="flex items-start justify-between gap-2 mt-2">
-                <p id="map-status" role="status" class="text-[10px] text-slate-500">
-                  지도 위치는 코스 주변 참고 지점입니다. 실제 산행 경로와 현재 위치를 표시하지 않습니다.
-                </p>
-                <a id="open-google-map" href="https://maps.google.com/" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[10px] font-bold text-forest-700 hover:underline">
-                  Google 지도 열기 ↗
-                </a>
+              <p class="rounded-lg bg-amber-50 px-2.5 py-2 text-[10px] font-semibold leading-relaxed text-amber-900">
+                시연용 가상 안내도입니다. 경로·현재 위치·시설·사고 구간은 실제 데이터가 아닙니다.
+              </p>
+              <p id="safety-data-provenance" class="rounded-lg bg-slate-50 px-2.5 py-2 text-[10px] leading-relaxed text-slate-600">
+                실제 안전 데이터 출처: 연결 안 됨 · 마지막 갱신: 해당 없음. 표시된 시설·사고 정보는 확인된 안전 정보가 아닙니다.
+              </p>
+              <div class="overflow-hidden rounded-xl border border-slate-200 bg-[#e6f0e6]">
+                <svg viewBox="0 0 360 245" role="img" aria-labelledby="safety-map-title safety-map-description" class="h-56 w-full">
+                  <desc id="safety-map-description">코스와 시설, 크루, 사고 구간을 설명하기 위한 가상 도식이며 실제 위치 정보가 아닙니다.</desc>
+                  <ellipse cx="255" cy="82" rx="100" ry="66" fill="#79a77d" opacity="0.12" />
+                  <ellipse cx="255" cy="82" rx="68" ry="46" fill="#79a77d" opacity="0.17" />
+                  <ellipse cx="255" cy="82" rx="39" ry="27" fill="#79a77d" opacity="0.22" />
+                  <path d="M28 211 C74 185 104 163 145 139 S205 102 238 82 S278 85 298 119 S316 161 331 190" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" />
+                  <path d="M28 211 C74 185 104 163 145 139 S205 102 238 82 S278 85 298 119 S316 161 331 190" fill="none" stroke="#47785b" stroke-width="7" stroke-linecap="round" stroke-dasharray="9 7" />
+                  <circle cx="28" cy="211" r="7" fill="#1f2937" />
+                  <text x="12" y="231" font-size="9" font-weight="700" fill="#334155">입구·주차장 (가상)</text>
+                  <circle cx="151" cy="136" r="12" fill="#3182bd" stroke="#fff" stroke-width="3" />
+                  <text x="151" y="139" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">쉼</text>
+                  <text x="125" y="159" font-size="9" font-weight="700" fill="#25628a">휴게시설 예시 (가상)</text>
+                  <circle cx="188" cy="118" r="8" fill="#2f6d43" stroke="#fff" stroke-width="3" />
+                  <text x="174" y="139" font-size="9" font-weight="700" fill="#31533d">내 위치 (가상)</text>
+                  <circle cx="236" cy="91" r="11" fill="#7138d8" stroke="#fff" stroke-width="3" />
+                  <text x="236" y="94" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">크루</text>
+                  <text x="205" y="69" font-size="9" font-weight="700" fill="#5425a8">동의 크루 2명 (가상)</text>
+                  <circle cx="267" cy="79" r="23" fill="none" stroke="#c53d35" stroke-width="2" stroke-dasharray="4 3" />
+                  <path d="M267 64 L278 84 H256 Z" fill="#c53d35" stroke="#fff" stroke-width="2" />
+                  <text x="267" y="80" text-anchor="middle" font-size="8" font-weight="900" fill="#fff">!</text>
+                  <rect x="231" y="101" width="104" height="19" rx="8" fill="#9d3834" />
+                  <text x="283" y="114" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">사고 구간 예시 (가상)</text>
+                </svg>
               </div>
+              <div class="flex flex-wrap justify-between gap-x-2 gap-y-1 px-1 text-[9px] font-semibold text-slate-600">
+                <span class="text-green-800">● 내 위치 (가상)</span>
+                <span class="text-violet-700">● 동의 크루 (가상)</span>
+                <span class="text-sky-700">● 휴게시설 (가상)</span>
+                <span class="text-red-700">● 사고 구간 (가상)</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h3 id="terrain-profile-title" class="text-xs font-extrabold text-slate-800">선택 코스 지형 단면</h3>
+                  <p id="terrain-profile-distance" class="text-[10px] text-slate-500 mt-0.5"></p>
+                </div>
+                <span class="shrink-0 rounded-full bg-amber-100 px-2 py-1 text-[9px] font-bold text-amber-800">참고용 추정</span>
+              </div>
+              <svg id="terrain-profile-chart" viewBox="0 0 320 130" role="img" aria-labelledby="terrain-profile-title terrain-profile-description" class="w-full h-36">
+                <desc id="terrain-profile-description">코스 거리별 개략 고도 단면. 파란 표식은 가상 휴게시설 예시, 빨간 표식은 가상 사고 구간 예시이며 실제 위치나 사고 통계가 아닙니다.</desc>
+                <defs>
+                  <linearGradient id="terrain-profile-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#2d7a53" stop-opacity="0.3" />
+                    <stop offset="100%" stop-color="#2d7a53" stop-opacity="0.03" />
+                  </linearGradient>
+                </defs>
+                <line x1="34" y1="18" x2="34" y2="102" stroke="#cbd5e1" stroke-width="1" />
+                <line x1="34" y1="102" x2="306" y2="102" stroke="#cbd5e1" stroke-width="1" />
+                <line x1="34" y1="60" x2="306" y2="60" stroke="#e2e8f0" stroke-dasharray="3 3" />
+                <text id="terrain-profile-max" x="30" y="20" text-anchor="end" font-size="8" fill="#64748b"></text>
+                <text id="terrain-profile-min" x="30" y="102" text-anchor="end" font-size="8" fill="#64748b"></text>
+                <path id="terrain-profile-area" d="" fill="url(#terrain-profile-gradient)" />
+                <path id="terrain-profile-line" d="" fill="none" stroke="#1f6140" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+                <circle id="terrain-profile-peak" cx="0" cy="0" r="4" fill="#dc2626" stroke="white" stroke-width="2" />
+                <text id="terrain-profile-peak-label" x="0" y="0" text-anchor="middle" font-size="9" font-weight="bold" fill="#b91c1c"></text>
+                <g id="terrain-profile-facility-marker" visibility="hidden" aria-label="휴게시설 위치 가상 예시">
+                  <line id="terrain-profile-facility-marker-line" x1="0" y1="0" x2="0" y2="100" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3 2" />
+                  <circle id="terrain-profile-facility-marker-circle" cx="0" cy="0" r="5" fill="#0284c7" stroke="white" stroke-width="1.5" />
+                  <text id="terrain-profile-facility-marker-glyph" x="0" y="0" text-anchor="middle" font-size="6" font-weight="bold" fill="white">쉼</text>
+                </g>
+                <g id="terrain-profile-accident-marker" visibility="hidden" aria-label="사고 다발 구간 가상 예시">
+                  <line id="terrain-profile-accident-marker-line" x1="0" y1="0" x2="0" y2="100" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 2" />
+                  <circle id="terrain-profile-accident-marker-circle" cx="0" cy="0" r="5" fill="#dc2626" stroke="white" stroke-width="1.5" />
+                  <text id="terrain-profile-accident-marker-glyph" x="0" y="0" text-anchor="middle" font-size="7" font-weight="bold" fill="white">!</text>
+                </g>
+              </svg>
+              <div class="flex flex-wrap gap-x-3 gap-y-1 text-[9px] font-semibold">
+                <span class="text-sky-700">● 휴게시설 예시 (가상)</span>
+                <span class="text-red-700">● 사고 구간 예시 (가상)</span>
+              </div>
+              <div class="flex justify-between text-[9px] text-slate-500">
+                <span>출발 · 0 km</span>
+                <span id="terrain-profile-end">종점</span>
+              </div>
+              <p id="terrain-profile-note" class="text-[10px] leading-relaxed text-amber-800 bg-amber-50 rounded-lg p-2">
+                GPX·DEM 실측 프로필이 아닌 참고용 개략 추정입니다. 실제 지형이나 경사와 다를 수 있어 산행 판단에 사용하지 마세요.
+              </p>
             </div>
 
             <!-- Interactive Altitude Simulator (Tests High-Altitude Notice!) -->
@@ -421,7 +487,7 @@
                 <span class="text-xs font-extrabold text-slate-800">⛰️ 현재 고도 시뮬레이터 (시연 테스트용)</span>
                 <span id="altitude-readout" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-forest-100 text-forest-800">해발 420m</span>
               </div>
-              <input id="altitude-slider" type="range" min="200" max="1100" step="10" value="420" oninput="updateAltitude(this.value)" class="w-full accent-forest-700 cursor-pointer" />
+              <input id="altitude-slider" type="range" min="200" max="1100" step="10" value="420" oninput="TrailMateSafety.updateAltitude(this.value)" class="w-full accent-forest-700 cursor-pointer" />
               <div class="flex justify-between text-[10px] text-slate-400">
                 <span>200m (입구)</span>
                 <span class="text-amber-600 font-semibold">650m (통신 취약 기준)</span>
@@ -429,16 +495,29 @@
               </div>
             </div>
 
-            <!-- Safety & Facility Summary Cards -->
-            <div class="grid grid-cols-2 gap-2">
-              <div class="bg-red-50 border border-red-200 rounded-xl p-2.5">
-                <div class="text-[11px] font-extrabold text-red-800">⚠️ 사고 정보 미연동</div>
-                <p class="text-[10px] text-red-700 mt-0.5 leading-snug">사고 다발지역 데이터는 제공되지 않습니다. 산행 전 공식 정보를 확인하세요.</p>
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h3 class="text-xs font-extrabold text-slate-800">휴게시설·사고 다발 구간</h3>
+                  <p class="text-[10px] text-slate-500 mt-0.5">선택 코스: <span id="safety-data-course-title">창원 천주산 진달래길 코스</span></p>
+                </div>
+                <span class="shrink-0 rounded-full bg-amber-100 px-2 py-1 text-[9px] font-bold text-amber-800">시연용 가상 데이터</span>
               </div>
               <div class="bg-sky-50 border border-sky-200 rounded-xl p-2.5">
-                <div class="text-[11px] font-extrabold text-sky-800">🏥 시설 정보 미연동</div>
-                <p class="text-[10px] text-sky-700 mt-0.5 leading-snug">휴게시설·구급함 위치는 제공되지 않습니다.</p>
+                <div class="flex items-center justify-between gap-2">
+                  <div class="text-[11px] font-extrabold text-sky-800">🏥 휴게시설 위치 예시 A</div>
+                  <span class="text-[9px] font-bold text-sky-700">가상 예시</span>
+                </div>
+                <p class="text-[10px] text-sky-700 mt-0.5 leading-snug">휴식 공간 표시 샘플 · 실제 시설명이나 좌표가 아닙니다.</p>
               </div>
+              <div class="bg-red-50 border border-red-200 rounded-xl p-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="text-[11px] font-extrabold text-red-800">⚠️ 사고 다발 구간 예시 A</div>
+                  <span class="text-[9px] font-bold text-red-700">가상 예시</span>
+                </div>
+                <p class="text-[10px] text-red-700 mt-0.5 leading-snug">위험 구간 표시 샘플 · 실제 사고 이력이나 위치가 아닙니다.</p>
+              </div>
+              <p class="text-[10px] leading-relaxed text-amber-900 bg-amber-50 rounded-lg p-2">주의: 위 항목은 화면 시연을 위한 가상 예시이며 실제 위치·사고 통계가 아닙니다. 산행이나 안전 판단에 사용하지 마세요.</p>
             </div>
           </section>
 
@@ -467,7 +546,11 @@
 
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
               <h3 class="text-sm font-extrabold text-slate-900">GPS 트래킹</h3>
-              <p class="text-[11px] text-slate-600">코스 소통방에 입장하면 위치 권한을 요청해 산행 기록을 시작합니다. 산행이 끝나면 종료 버튼을 눌러 주세요.</p>
+              <p class="text-[11px] text-slate-600">소통방 입장만으로 GPS를 수집하지 않습니다. GPS 기록은 별도 동의 후 시작 버튼을 눌러 시작하며, 동의를 끄면 추가 위치 수집을 중단하고 종료 위치 없이 기록을 마칠 수 있습니다.</p>
+              <label for="gps-tracking-consent-profile" class="flex items-center gap-2 text-xs font-bold text-forest-900">
+                <input id="gps-tracking-consent-profile" type="checkbox" onchange="toggleGpsConsent(this.checked)" class="h-4 w-4 accent-forest-700" />
+                GPS 기록에 동의합니다
+              </label>
               <p id="tracking-active" class="text-xs text-slate-600">진행 중인 기록이 없습니다.</p>
               <button id="tracking-button" onclick="finishTracking()" disabled class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs disabled:opacity-50">산행 종료</button>
               <button id="refresh-tracking" onclick="refreshTracking()" class="w-full py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs disabled:opacity-50">기록 다시 불러오기</button>
@@ -503,7 +586,7 @@
           </button>
           <button onclick="goToStep(4)" id="nav-btn-4" class="nav-btn flex flex-col items-center justify-center text-slate-400 font-medium">
             <span class="text-base leading-none">🧭</span>
-            <span class="text-[10px] mt-1">안전지도</span>
+            <span class="text-[10px] mt-1">안전정보</span>
           </button>
           <button onclick="openMyPage()" id="nav-btn-5" class="nav-btn flex flex-col items-center justify-center text-slate-400 font-medium">
             <span class="text-base leading-none">👤</span>
@@ -593,7 +676,7 @@
         <div class="bg-white rounded-xl p-3 border border-slate-200 flex-1 space-y-2 text-xs">
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-800">천주산 2030 크루방 (6명)</span>
-            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">GPS 동의 ON</span>
+            <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">GPS 기록은 별도 동의</span>
           </div>
           <div class="space-y-1.5 bg-slate-50 p-2 rounded-lg text-[10px]">
             <div class="bg-white p-1.5 rounded border border-slate-200"><strong>다현:</strong> 입구 주차장 도착했어요!</div>
@@ -602,7 +685,7 @@
           </div>
           <div class="text-[10px] text-slate-500">• 빠른 상태: 정상 도착 / 휴식 중 / 택시 동행</div>
           <div class="w-full py-2 rounded-lg bg-slate-900 text-white text-center font-bold text-[11px]">
-            산행 안전·위치 지도 보기 →
+            산행 안전 정보 보기 →
           </div>
         </div>
       </div>
@@ -618,10 +701,10 @@
             <strong>⚠️ 시연용 고도 알림:</strong><br/>실제 통신 상태와 오프라인 안전 데이터는 확인하지 않습니다.
           </div>
           <div class="bg-[#e6f0e6] rounded-lg p-2.5 border border-slate-200 text-[10px] space-y-1">
-            <div class="font-bold text-forest-900">🗺️ 코스 주변 위성사진 (API 키 필요)</div>
-            <div class="text-red-700 font-semibold">• 사고 다발지역 데이터 미연동</div>
-            <div class="text-sky-700 font-semibold">• 휴게시설·구급함 정보 미연동</div>
-            <div class="text-violet-700 font-semibold">• 실시간 GPS 위치 공유 미연동</div>
+            <div class="font-bold text-forest-900">🧭 산행 안전 정보</div>
+            <div class="text-red-700 font-semibold">• 사고 구간: 시연용 가상 예시 (실제 통계 아님)</div>
+            <div class="text-sky-700 font-semibold">• 휴게시설: 시연용 가상 예시 (실제 위치 아님)</div>
+            <div class="text-violet-700 font-semibold">• 크루 GPS 위치 공유 미지원</div>
           </div>
           <div class="w-full py-1.5 rounded-lg bg-red-600 text-white text-center font-bold text-[10px]">
             🚨 119 긴급 신고 · 국가지점번호 확인
@@ -643,7 +726,7 @@
         <p class="text-[11px] text-forest-700">선택한 코스</p>
         <p id="room-confirm-course" class="text-sm font-extrabold text-forest-900 mt-0.5"></p>
       </div>
-      <p class="text-xs text-slate-600">입장에 동의하면 회원 전용 채팅방에 참여하고 GPS 트래킹을 시작합니다. 위치 권한을 요청하며, 시작·종료 좌표와 측정한 최고 고도는 본인 기록에 저장됩니다. 이동 경로는 저장하지 않습니다.</p>
+      <p class="text-xs text-slate-600">입장 동의는 회원 전용 채팅방 참여에만 적용됩니다. GPS 기록은 별도 동의 후 직접 시작해야 하며, 크루에게 위치를 공유하지 않습니다.</p>
       <p id="room-config-warning" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2.5"></p>
       <div class="flex gap-2">
         <button onclick="closeAllModals()" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">취소</button>
@@ -685,8 +768,8 @@
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
       </div>
       <ul class="text-xs text-slate-600 space-y-2 leading-relaxed">
-        <li><strong>1. 핵심 4단계 시연:</strong> 홈에서 코스를 누르면 상세 → 크루 소통방 → 산행 안전 지도까지 자연스럽게 이어집니다.</li>
-        <li><strong>2. 고지대 통신 공지 시연:</strong> 4단계 지도 화면 하단의 <strong>고도 슬라이더를 650m 이상</strong>으로 올리면 통신 취약 구간 사전 안내 배너가 작동합니다.</li>
+        <li><strong>1. 핵심 4단계 시연:</strong> 홈에서 코스를 누르면 상세 → 크루 소통방 → 산행 안전 정보까지 자연스럽게 이어집니다.</li>
+        <li><strong>2. 고지대 통신 공지 시연:</strong> 4단계 화면의 <strong>고도 슬라이더를 650m 이상</strong>으로 올리면 통신 취약 구간 사전 안내 배너가 작동합니다.</li>
         <li><strong>3. PRD 캡처:</strong> 상단의 <strong>[4단계 한눈에 보기]</strong> 버튼을 누르면 문서 첨부용 화면 흐름도를 한 번에 캡처할 수 있습니다.</li>
       </ul>
       <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">확인</button>
@@ -698,10 +781,14 @@
         <h3 class="font-extrabold text-red-700 text-base">🚨 산행 비상 안내 & 국가지점번호</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
       </div>
-      <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-900 space-y-1">
-        <div class="font-bold">현재 추정 국가지점번호 (오프라인 좌표 기준)</div>
-        <div class="font-mono text-sm font-extrabold text-red-700">마산 다바 8412 9104 (천주산 능선 부근)</div>
-        <p class="text-[11px] text-red-700 pt-1">데이터 통신이 불안정할 경우 음성 119 신고 또는 단말기 위성/긴급 SOS 기능을 우선 활용하세요.</p>
+      <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-900 space-y-2">
+        <div class="font-bold">119 신고 및 국가지점번호 안내</div>
+        <ol class="list-decimal pl-4 text-[11px] leading-relaxed text-red-700 space-y-1">
+          <li>긴급 상황이면 119에 전화해 상황과 부상 여부를 알리세요.</li>
+          <li>주변의 실제 국가지점번호판·구조 안내 표지를 찾아 적힌 번호를 그대로 전달하세요.</li>
+          <li>표지를 찾지 못하면 산 이름, 등산로, 마지막으로 확인한 이정표를 설명하세요. 앱은 위치나 국가지점번호를 계산하지 않습니다.</li>
+        </ol>
+        <a href="tel:119" class="inline-flex rounded-lg bg-red-700 px-3 py-2 font-bold text-white" aria-label="119에 전화 걸기">119에 전화 걸기</a>
       </div>
       <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs">닫기</button>
     </div>
@@ -712,15 +799,15 @@
         <h3 class="font-extrabold text-slate-900 text-base">🏃 경남 트레일 대회 & 산책로 (확장)</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
       </div>
-      <p class="text-xs text-slate-600">핵심 산행 기능 이후 단계적으로 연계되는 부가 콘텐츠입니다.</p>
+      <p class="text-xs text-slate-600">후속 확장용 시연 예시이며 실제 행사 일정이나 운영 정보가 아닙니다.</p>
       <div class="space-y-2 text-xs">
         <div class="p-3 rounded-xl bg-amber-50 border border-amber-200">
-          <div class="font-bold text-amber-900">2026 경남 황매산 트레일 러닝 챌린지</div>
-          <div class="text-[11px] text-amber-800 mt-0.5">12km 입문 코스 / 25km 능선 코스 · 대회 코스 사전 답사 크루 연계</div>
+          <div class="font-bold text-amber-900">시연 예시: 경남 산악 트레일 러닝 행사</div>
+          <div class="text-[11px] text-amber-800 mt-0.5">코스·일정은 가상 예시이며 실제 대회 정보가 아닙니다.</div>
         </div>
         <div class="p-3 rounded-xl bg-forest-50 border border-forest-200">
-          <div class="font-bold text-forest-900">창원 용지호수·광려천 가벼운 산책로</div>
-          <div class="text-[11px] text-forest-800 mt-0.5">퇴근 후 40~50분 도심형 둘레길 추천</div>
+          <div class="font-bold text-forest-900">산책로 연계 예시</div>
+          <div class="text-[11px] text-forest-800 mt-0.5">장소·거리·소요 시간은 검증되지 않은 시연 문구입니다.</div>
         </div>
       </div>
       <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">닫기</button>
@@ -732,7 +819,7 @@
         <h3 class="font-extrabold text-slate-900 text-base">🎒 등산 장비 대여·공유 (후속 확장)</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
       </div>
-      <p class="text-xs text-slate-600">초기 장비 구매 부담을 낮추기 위한 후속 확장 기능 미리보기입니다.</p>
+      <p class="text-xs text-slate-600">후속 확장용 화면 예시입니다. 표시된 상품·가격은 가상이며 실제 대여·판매·결제는 지원하지 않습니다.</p>
       <div class="space-y-2 text-xs">
         <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
           <div>
@@ -758,1117 +845,10 @@
     알림 메시지
   </div>
 
-  <script>
-    // Curated Gyeongnam Mountain & Trail Data (Manual Curation Sample)
-    const COURSES = [
-      {
-        id: 'cheonjusan',
-        title: '창원 천주산 진달래길 코스',
-        region: '경남 창원시 의창구·마산회원구',
-        difficulty: '초급',
-        badgeClass: 'bg-emerald-100 text-emerald-800',
-        distance: '4.2 km',
-        duration: '1시간 40분',
-        elevation: '638 m',
-        mapCenter: { lat: 35.287, lng: 128.609 },
-        mapZoom: 14,
-        crewCount: 6,
-        tags: ['입문 추천', '능선 전망', '대중교통 접근'],
-        desc: '완만한 흙길과 탁 트인 능선 전망이 어우러져 등산 초보 청년도 부담 없이 즐길 수 있는 대표 힐링 코스입니다.',
-        cautions: [
-          '하산 직전 자갈길 구간 미끄럼 주의 (접지력 좋은 운동화/등산화 권장)',
-          '안전 데이터가 연동되지 않았습니다. 산행 전 공식 정보를 확인하세요.'
-        ]
-      },
-      {
-        id: 'muhaksan',
-        title: '마산 무학산 둘레·정상 코스',
-        region: '경남 창원시 마산합포구',
-        difficulty: '중급',
-        badgeClass: 'bg-amber-100 text-amber-800',
-        distance: '6.8 km',
-        duration: '2시간 50분',
-        elevation: '761 m',
-        mapCenter: { lat: 35.210966, lng: 128.561859 },
-        mapZoom: 14,
-        crewCount: 8,
-        tags: ['마산만 야경·조망', '계단 구간', '크루 인기'],
-        desc: '마산만을 내려다보는 시원한 조망과 적당한 오르막이 매력적인 경남 청년 인기 크루 코스입니다.',
-        cautions: [
-          '정상 부근 데크 계단 및 강풍 시 체온 저하 주의 (바람막이 지참)',
-          '해발 650m 이상 구간부터 전파가 약해질 수 있어 오프라인 안내로 전환됩니다.'
-        ]
-      },
-      {
-        id: 'hwangmaesan',
-        title: '합천 황매산 능선 종주 코스',
-        region: '경남 합천군 가회면·산청군',
-        difficulty: '고급',
-        badgeClass: 'bg-rose-100 text-rose-800',
-        distance: '9.5 km',
-        duration: '4시간 10분',
-        elevation: '1,113 m',
-        mapCenter: { lat: 35.49407, lng: 127.97461 },
-        mapZoom: 14,
-        crewCount: 4,
-        tags: ['억새·철쭉 명소', '고지대 종주', '장비 필수'],
-        desc: '탁 트인 고원 능선을 따라 걷는 장거리 산행 코스로, 충분한 수분과 체력 안배가 필요한 상급자 추천 코스입니다.',
-        cautions: [
-          '해발 1,000m 이상 능선 구간 통신 음영 가능성 높음 — 동행 크루 간격 유지 필수',
-          '급경사 암반 구간 추락·미끄럼 주의 및 스틱 사용 권장'
-        ]
-      },
-      {
-        id: 'yongji',
-        title: '창원 용지호수·광려천 수변 산책길',
-        region: '경남 창원시 성산구',
-        difficulty: '산책로',
-        badgeClass: 'bg-sky-100 text-sky-800',
-        distance: '3.1 km',
-        duration: '50분',
-        elevation: '45 m',
-        mapCenter: { lat: 35.2323, lng: 128.682 },
-        mapZoom: 16,
-        crewCount: 11,
-        tags: ['부가 산책로', '퇴근 후 가볍게', '운동화 OK'],
-        desc: '등산이 부담스러운 날 가볍게 걸으며 소통할 수 있는 경남 도심형 수변 산책 코스입니다.',
-        cautions: [
-          '야간 산책 시 자전거 도로와 보행로 구분 구간 주의'
-        ]
-      }
-    ];
-
-    const SUPABASE_URL = 'https://vfhjvelxirfgastdqohq.supabase.co';
-    const SUPABASE_PUBLIC_KEY = 'sb_publishable_n5qdZiWcLJ9oA6swElKrBg_venzzx-O';
-    const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
-
-    let selectedCourse = COURSES[0];
-    let currentFilter = '전체';
-    let hasSelectedCourse = false;
-    let isGpsConsentOn = true;
-    let supabaseClient = null;
-    let clerkReady = false;
-    let currentUser = null;
-    let pendingRoomCourseId = null;
-    let activeRoomCourseId = null;
-    let chatSubscription = null;
-    let chatMessages = [];
-    let authMode = 'signin';
-    let googleMapsLoader = null;
-    let courseMap = null;
-    let courseMapMarker = null;
-    let courseMapInitializing = false;
-    let googleMapsAuthFailed = false;
-    let activeTracking = null;
-    let trackingReady = false;
-    let trackingBusy = false;
-    let profileLoadVersion = 0;
-    let altitudeWatchId = null;
-    let altitudeWatchSessionId = null;
-    let altitudeTimer = null;
-    let altitudeSavePromise = null;
-    let observedAltitude = null;
-
-    function isSupabaseConfigured() {
-      return window.supabase && clerkReady && supabaseClient
-        && SUPABASE_URL.startsWith('https://')
-        && !SUPABASE_URL.includes('YOUR_PROJECT_ID')
-        && SUPABASE_PUBLIC_KEY
-        && !SUPABASE_PUBLIC_KEY.includes('YOUR_SUPABASE_');
-    }
-
-    function showChatStatus(message, type = 'error') {
-      const status = document.getElementById('chat-status');
-      status.textContent = message;
-      status.className = `text-[11px] rounded-xl px-3 py-2 ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-forest-50 text-forest-800 border border-forest-200'}`;
-      status.classList.remove('hidden');
-    }
-
-    function showToast(msg) {
-      const el = document.getElementById('toast');
-      el.textContent = msg;
-      el.classList.remove('opacity-0');
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => el.classList.add('opacity-0'), 2400);
-    }
-
-    function escapeHTML(value) {
-      return String(value).replace(/[&<>"']/g, char => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      })[char]);
-    }
-
-    function setViewMode(mode) {
-      const singleEl = document.getElementById('single-mode-container');
-      const flowEl = document.getElementById('flow-mode-container');
-      const btnSingle = document.getElementById('btn-mode-single');
-      const btnFlow = document.getElementById('btn-mode-flow');
-
-      if (mode === 'single') {
-        singleEl.classList.remove('hidden');
-        flowEl.classList.add('hidden');
-        btnSingle.className = 'flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition bg-forest-700 text-white shadow-sm';
-        btnFlow.className = 'flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 hover:text-slate-900';
-      } else {
-        singleEl.classList.add('hidden');
-        flowEl.classList.remove('hidden');
-        btnFlow.className = 'flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition bg-forest-700 text-white shadow-sm';
-        btnSingle.className = 'flex-1 md:flex-initial px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition text-slate-600 hover:text-slate-900';
-      }
-    }
-
-    function selectCondition(label, diff) {
-      document.getElementById('condition-badge').textContent = label;
-      document.querySelectorAll('.cond-btn').forEach(btn => {
-        btn.className = 'cond-btn py-2 px-2 rounded-xl font-medium border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition';
-      });
-      event.currentTarget.className = 'cond-btn py-2 px-2 rounded-xl font-semibold border border-forest-600 bg-forest-50 text-forest-800 transition';
-      filterCourses(diff);
-      showToast(`'${label}' 컨디션에 맞는 ${diff} 코스를 추천합니다.`);
-    }
-
-    function filterCourses(diff) {
-      currentFilter = diff;
-      document.querySelectorAll('.diff-btn').forEach(btn => {
-        if (btn.textContent.startsWith(diff)) {
-          btn.className = 'diff-btn px-3 py-1.5 rounded-full text-xs font-bold bg-forest-700 text-white shrink-0';
-        } else {
-          btn.className = 'diff-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 shrink-0';
-        }
-      });
-      renderCourses();
-    }
-
-    function renderCourses() {
-      const container = document.getElementById('course-list');
-      const filtered = currentFilter === '전체'
-        ? COURSES
-        : COURSES.filter(c => c.difficulty === currentFilter);
-
-      container.innerHTML = filtered.map(c => `
-        <div onclick="selectCourse('${c.id}')" class="cursor-pointer bg-white hover:border-forest-500 border border-slate-200 rounded-2xl p-3.5 shadow-sm transition group">
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <span class="text-[10px] text-slate-400 font-medium">${c.region}</span>
-              <h4 class="text-sm font-extrabold text-slate-900 group-hover:text-forest-700 transition">${c.title}</h4>
-            </div>
-            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${c.badgeClass}">${c.difficulty}</span>
-          </div>
-          <div class="flex items-center gap-3 text-xs text-slate-600 mt-2 font-medium">
-            <span>📏 ${c.distance}</span>
-            <span>⏱️ ${c.duration}</span>
-            <span>⛰️ ${c.elevation}</span>
-          </div>
-          <div class="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100">
-            <div class="flex gap-1 flex-wrap">
-              ${c.tags.map(t => `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#${t}</span>`).join('')}
-            </div>
-            <span class="text-[11px] font-bold text-forest-700 shrink-0">상세 보기 →</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function selectCourse(id) {
-      const found = COURSES.find(c => c.id === id);
-      if (!found) return;
-      selectedCourse = found;
-      hasSelectedCourse = true;
-      activeRoomCourseId = null;
-      chatMessages = [];
-      void stopRoomSubscription();
-      updateCourseBoundUI();
-      goToStep(2);
-      requestCourseRoomEntry();
-    }
-
-    function updateCourseBoundUI() {
-      // Step 2 UI
-      document.getElementById('detail-region').textContent = selectedCourse.region;
-      document.getElementById('detail-title').textContent = selectedCourse.title;
-      document.getElementById('detail-desc').textContent = selectedCourse.desc;
-      document.getElementById('detail-distance').textContent = selectedCourse.distance;
-      document.getElementById('detail-duration').textContent = selectedCourse.duration;
-      document.getElementById('detail-elevation').textContent = selectedCourse.elevation;
-      const badge = document.getElementById('detail-diff-badge');
-      badge.textContent = selectedCourse.difficulty;
-      badge.className = `text-xs font-bold px-2.5 py-0.5 rounded-full ${selectedCourse.badgeClass}`;
-
-      document.getElementById('detail-cautions').innerHTML = selectedCourse.cautions.map(item => `
-        <li class="flex items-start gap-2"><span class="text-amber-500 font-bold">•</span> <span>${item}</span></li>
-      `).join('');
-
-      // Step 3 UI
-      document.getElementById('chat-room-title').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 2030 크루방`;
-
-      // Step 4 UI
-      document.getElementById('map-course-name').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 주변 위성 지도`;
-      updateCourseMapLocation();
-    }
-
-    function setCourseMapStatus(message, isError = false) {
-      const status = document.getElementById('map-status');
-      status.textContent = message;
-      status.className = `text-[10px] ${isError ? 'text-red-700' : 'text-slate-500'}`;
-    }
-
-    function updateCourseMapLocation() {
-      if (!selectedCourse?.mapCenter) return;
-      const { lat, lng } = selectedCourse.mapCenter;
-      document.getElementById('open-google-map').href =
-        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`;
-      if (courseMap && courseMapMarker) {
-        courseMap.setCenter(selectedCourse.mapCenter);
-        courseMap.setZoom(selectedCourse.mapZoom);
-        courseMapMarker.setPosition(selectedCourse.mapCenter);
-        courseMapMarker.setTitle(selectedCourse.title);
-      }
-    }
-
-    function loadGoogleMaps() {
-      if (window.google?.maps) return Promise.resolve();
-      if (googleMapsLoader) return googleMapsLoader;
-      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
-        return Promise.reject(new Error('Google Maps API 키가 설정되지 않았습니다.'));
-      }
-
-      googleMapsLoader = new Promise((resolve, reject) => {
-        const callbackName = 'onGoogleMapsLoaded';
-        window[callbackName] = () => {
-          delete window[callbackName];
-          resolve();
-        };
-        window.gm_authFailure = () => {
-          googleMapsAuthFailed = true;
-          setCourseMapStatus('Google Maps API 인증에 실패했습니다. API 키, Maps JavaScript API 및 결제 설정을 확인해 주세요.', true);
-        };
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&callback=${callbackName}`;
-        script.async = true;
-        script.onerror = () => {
-          delete window[callbackName];
-          googleMapsLoader = null;
-          reject(new Error('Google Maps 스크립트를 불러오지 못했습니다.'));
-        };
-        document.head.appendChild(script);
-      });
-      return googleMapsLoader;
-    }
-
-    async function initializeCourseMap() {
-      updateCourseMapLocation();
-      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
-        setCourseMapStatus('Google Maps API 키 설정이 필요합니다. 키를 설정하면 선택 코스 주변 위성사진이 표시됩니다.');
-        return;
-      }
-      if (courseMap || courseMapInitializing) {
-        if (courseMap) google.maps.event.trigger(courseMap, 'resize');
-        return;
-      }
-
-      courseMapInitializing = true;
-      setCourseMapStatus('Google 위성사진을 불러오는 중입니다.');
-      try {
-        await loadGoogleMaps();
-        const mapElement = document.getElementById('course-map');
-        courseMap = new google.maps.Map(mapElement, {
-          center: selectedCourse.mapCenter,
-          zoom: selectedCourse.mapZoom,
-          mapTypeId: 'satellite',
-          streetViewControl: false,
-          mapTypeControl: true,
-          fullscreenControl: true
-        });
-        courseMapMarker = new google.maps.Marker({
-          map: courseMap,
-          position: selectedCourse.mapCenter,
-          title: selectedCourse.title
-        });
-        if (!googleMapsAuthFailed) {
-          setCourseMapStatus('선택 코스 주변의 참고 지점입니다. 검증된 산행 경로, 현재 위치 또는 안전·시설 정보를 표시하지 않습니다.');
-        }
-      } catch (error) {
-        console.error('Google Maps loading failed:', error);
-        setCourseMapStatus(`${error.message} Google 지도를 링크로 열어 위치를 확인할 수 있습니다.`, true);
-      } finally {
-        courseMapInitializing = false;
-      }
-    }
-
-    function requestCourseRoomEntry() {
-      if (!hasSelectedCourse) {
-        showToast('먼저 참여할 코스를 선택해 주세요.');
-        return;
-      }
-
-      document.getElementById('room-confirm-course').textContent = selectedCourse.title;
-      const warning = document.getElementById('room-config-warning');
-      const confirmButton = document.getElementById('btn-confirm-room-entry');
-      const configured = isSupabaseConfigured();
-      warning.textContent = '로그인 또는 채팅 서버에 연결할 수 없습니다. 새로고침 후 다시 시도해 주세요.';
-      warning.classList.toggle('hidden', configured);
-      confirmButton.disabled = !configured;
-      confirmButton.classList.toggle('opacity-50', !configured);
-      confirmButton.classList.toggle('cursor-not-allowed', !configured);
-      openModal('modal-room-confirm');
-    }
-
-    async function confirmCourseRoomEntry() {
-      if (!isSupabaseConfigured()) {
-        showToast('실시간 채팅 서버 설정이 필요합니다.');
-        return;
-      }
-
-      if (!currentUser) {
-        pendingRoomCourseId = selectedCourse.id;
-        localStorage.setItem('pending-course-room-id', pendingRoomCourseId);
-        setAuthMode('signin');
-        document.getElementById('auth-context').textContent = `${selectedCourse.title} 소통방에 입장하려면 로그인하거나 회원가입해 주세요.`;
-        closeAllModals();
-        openModal('modal-auth');
-        return;
-      }
-
-      await enterCourseRoom(selectedCourse.id);
-    }
-
-    function goToStep(step) {
-      if (step === 3 && (!currentUser || activeRoomCourseId !== selectedCourse.id)) {
-        showToast('코스를 선택하고 소통방 입장에 동의해 주세요.');
-        return;
-      }
-
-      [1, 2, 3, 4, 5].forEach(n => {
-        const sec = document.getElementById(`screen-${n}`);
-        const pill = document.getElementById(`step-pill-${n}`);
-        const nav = document.getElementById(`nav-btn-${n}`);
-        if (n === step) {
-          sec.classList.remove('hidden');
-          if (pill) pill.className = 'step-pill py-1.5 px-1 rounded-lg font-bold text-center transition bg-white text-forest-800 shadow-sm';
-          if (nav) nav.className = 'nav-btn flex flex-col items-center justify-center text-forest-700 font-bold';
-        } else {
-          sec.classList.add('hidden');
-          if (pill) pill.className = 'step-pill py-1.5 px-1 rounded-lg font-medium text-center transition text-forest-100 hover:bg-white/10';
-          if (nav) nav.className = 'nav-btn flex flex-col items-center justify-center text-slate-400 font-medium';
-        }
-      });
-      document.getElementById('screen-body').scrollTop = 0;
-      if (step === 3) renderChat();
-      if (step === 4) void initializeCourseMap();
-    }
-
-    function toggleGpsConsent() {
-      isGpsConsentOn = !isGpsConsentOn;
-      const btn = document.getElementById('toggle-gps-consent');
-      const sub = document.getElementById('gps-consent-sub');
-      if (isGpsConsentOn) {
-        btn.className = 'w-11 h-6 rounded-full bg-forest-600 p-0.5 transition flex items-center justify-end';
-        sub.textContent = '시연 설정 ON — 실시간 GPS 위치 공유는 아직 연결되지 않았습니다';
-        showToast('시연용 설정이 켜졌습니다. 실제 위치는 공유되지 않습니다.');
-      } else {
-        btn.className = 'w-11 h-6 rounded-full bg-slate-300 p-0.5 transition flex items-center justify-start';
-        sub.textContent = '시연 설정 OFF — 실시간 GPS 위치 공유는 아직 연결되지 않았습니다';
-        showToast('시연용 설정이 꺼졌습니다. 실제 위치는 공유되지 않습니다.');
-      }
-    }
-
-    function renderChat() {
-      const box = document.getElementById('chat-messages');
-      if (chatMessages.length === 0) {
-        box.innerHTML = '<p class="text-center text-xs text-slate-400 py-8">첫 메시지를 남겨 보세요.</p>';
-        return;
-      }
-
-      box.innerHTML = chatMessages.map(message => {
-        const isMe = message.user_id === currentUser?.id;
-        const time = new Date(message.created_at).toLocaleTimeString('ko-KR', {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-        return `
-          <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
-            ${isMe ? '' : `<span class="text-[10px] font-bold text-slate-600 mb-0.5">${escapeHTML(message.display_name)}</span>`}
-            <div class="${isMe ? 'bg-forest-700 text-white rounded-tr-sm' : 'bg-slate-100 text-slate-800 rounded-tl-sm'} text-xs px-3 py-2 rounded-2xl max-w-[82%] shadow-xs break-words">
-              ${escapeHTML(message.body)}
-            </div>
-            <span class="text-[10px] text-slate-400 mt-0.5">${escapeHTML(time)}</span>
-          </div>
-        `;
-      }).join('');
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function appendChatMessage(message) {
-      if (chatMessages.some(existing => existing.id === message.id)) return;
-      chatMessages.push(message);
-      chatMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      renderChat();
-    }
-
-    async function handleSendChat(e) {
-      e.preventDefault();
-      const input = document.getElementById('chat-input');
-      const text = input.value.trim();
-      if (!text) return;
-      if (await sendChatMessage(text)) input.value = '';
-    }
-
-    async function sendQuickStatus(text) {
-      await sendChatMessage(text);
-    }
-
-    async function sendChatMessage(text) {
-      if (!currentUser || !activeRoomCourseId || !supabaseClient) {
-        showToast('코스 소통방에 입장한 뒤 메시지를 보낼 수 있습니다.');
-        return;
-      }
-      if (text.length > 1000) {
-        showToast('메시지는 1,000자 이내로 입력해 주세요.');
-        return;
-      }
-
-      const { data, error } = await supabaseClient
-        .from('course_room_messages')
-        .insert({
-          course_id: activeRoomCourseId,
-          user_id: currentUser.id,
-          display_name: getDisplayName(currentUser),
-          body: text
-        })
-        .select('id, course_id, user_id, display_name, body, created_at')
-        .single();
-
-      if (error) {
-        showChatStatus(`메시지를 보내지 못했습니다: ${error.message}`);
-        return false;
-      }
-
-      appendChatMessage(data);
-      return true;
-    }
-
-    function getDisplayName(user) {
-      const name = user.unsafeMetadata?.display_name || user.username || '회원';
-      return name.trim().slice(0, 30) || '회원';
-    }
-
-    function setPageStatus(id, message, error = false) {
-      const el = document.getElementById(id);
-      el.textContent = message;
-      el.className = `text-xs ${error ? 'text-red-700' : 'text-forest-700'}`;
-      el.classList.toggle('hidden', !message);
-    }
-
-    function renderProfile() {
-      if (!currentUser) return;
-      document.getElementById('profile-image').src = currentUser.imageUrl;
-      document.getElementById('profile-name').textContent = getDisplayName(currentUser);
-      document.getElementById('profile-username').textContent = `@${currentUser.username || '회원'}`;
-      document.getElementById('profile-nickname').value = getDisplayName(currentUser);
-    }
-
-    function openMyPage() {
-      if (!currentUser) {
-        handleAccountAction();
-        return;
-      }
-      const now = new Date();
-      document.getElementById('tracking-month').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      renderProfile();
-      setPageStatus('profile-status', '');
-      goToStep(5);
-      void refreshTracking();
-    }
-
-    async function saveNickname(event) {
-      event.preventDefault();
-      const user = currentUser;
-      const name = document.getElementById('profile-nickname').value.trim();
-      if (!user || !name || name.length > 30) {
-        setPageStatus('profile-status', '닉네임을 1~30자로 입력해 주세요.', true);
-        return;
-      }
-      const button = document.getElementById('save-nickname');
-      button.disabled = true;
-      try {
-        await user.update({ unsafeMetadata: { ...user.unsafeMetadata, display_name: name } });
-        if (currentUser?.id !== user.id) return;
-        currentUser = window.Clerk.user;
-        renderProfile();
-        setPageStatus('profile-status', '닉네임을 저장했습니다.');
-      } catch (error) {
-        setPageStatus('profile-status', `닉네임을 저장하지 못했습니다: ${error.message}`, true);
-      } finally {
-        button.disabled = false;
-      }
-    }
-
-    async function saveProfileImage(event) {
-      event.preventDefault();
-      const user = currentUser;
-      const fileInput = document.getElementById('profile-image-file');
-      const file = fileInput.files[0];
-      if (!user || !file) return;
-      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
-        setPageStatus('profile-status', 'JPG, PNG 또는 WebP 사진을 5MB 이하로 선택해 주세요.', true);
-        return;
-      }
-      const button = document.getElementById('save-profile-image');
-      button.disabled = true;
-      try {
-        await user.setProfileImage({ file });
-        if (currentUser?.id !== user.id) return;
-        currentUser = window.Clerk.user;
-        renderProfile();
-        fileInput.value = '';
-        setPageStatus('profile-status', '프로필 사진을 저장했습니다.');
-      } catch (error) {
-        setPageStatus('profile-status', `사진을 저장하지 못했습니다: ${error.message}`, true);
-      } finally {
-        button.disabled = false;
-      }
-    }
-
-    function renderActiveTracking() {
-      const button = document.getElementById('tracking-button');
-      const chatButton = document.getElementById('chat-tracking-button');
-      button.disabled = !trackingReady || trackingBusy || !activeTracking;
-      document.getElementById('refresh-tracking').disabled = trackingBusy;
-      chatButton.disabled = trackingBusy || (!activeTracking && !activeRoomCourseId);
-      chatButton.textContent = trackingBusy ? '처리 중...' : !trackingReady ? '기록 다시 확인' : activeTracking ? '산행 종료' : 'GPS 기록 시작 재시도';
-      const course = COURSES.find(item => item.id === activeTracking?.course_id);
-      const text = activeTracking
-        ? `${course?.title || activeTracking.course_id} · ${new Date(activeTracking.started_at).toLocaleString('ko-KR')} 시작`
-        : '진행 중인 산행 기록이 없습니다.';
-      document.getElementById('tracking-active').textContent = text;
-      document.getElementById('chat-tracking-active').textContent = text;
-    }
-
-    function setTrackingStatus(message, error = false) {
-      setPageStatus('tracking-status', message, error);
-      setPageStatus('chat-tracking-status', message, error);
-    }
-
-    function stopAltitudeWatch() {
-      if (altitudeWatchId !== null) navigator.geolocation.clearWatch(altitudeWatchId);
-      altitudeWatchId = null;
-      altitudeWatchSessionId = null;
-      clearTimeout(altitudeTimer);
-      altitudeTimer = null;
-    }
-
-    function rememberAltitude(position) {
-      const altitude = position.coords.altitude;
-      if (typeof altitude !== 'number' || !Number.isFinite(altitude)) return;
-      observedAltitude = observedAltitude === null ? altitude : Math.max(observedAltitude, altitude);
-      if (activeTracking && (activeTracking.max_altitude_m === null || observedAltitude > activeTracking.max_altitude_m) && !altitudeTimer) {
-        altitudeTimer = setTimeout(() => {
-          altitudeTimer = null;
-          void saveObservedAltitude();
-        }, 15000);
-      }
-    }
-
-    async function saveObservedAltitude() {
-      if (altitudeSavePromise || !activeTracking || observedAltitude === null || trackingBusy) return;
-      const sessionId = activeTracking.id;
-      const userId = currentUser?.id;
-      const altitude = observedAltitude;
-      altitudeSavePromise = supabaseClient.from('tracking_sessions')
-        .update({ max_altitude_m: altitude }).eq('id', sessionId).eq('user_id', userId).is('ended_at', null)
-        .select('max_altitude_m').single();
-      try {
-        const { data, error } = await altitudeSavePromise;
-        if (error) throw error;
-        if (activeTracking?.id !== sessionId || currentUser?.id !== userId) return;
-        activeTracking.max_altitude_m = data.max_altitude_m;
-        if (observedAltitude > data.max_altitude_m && !altitudeTimer) {
-          altitudeTimer = setTimeout(() => {
-            altitudeTimer = null;
-            void saveObservedAltitude();
-          }, 15000);
-        }
-      } catch (error) {
-        if (activeTracking?.id === sessionId && currentUser?.id === userId) {
-          setTrackingStatus(`GPS 고도를 저장하지 못했습니다: ${error.message}. 연결을 확인해 주세요.`, true);
-        }
-      } finally {
-        altitudeSavePromise = null;
-      }
-    }
-
-    function startAltitudeWatch() {
-      if (!activeTracking || !navigator.geolocation || altitudeWatchSessionId === activeTracking.id) return;
-      stopAltitudeWatch();
-      const sessionId = activeTracking.id;
-      const userId = currentUser?.id;
-      altitudeWatchSessionId = sessionId;
-      altitudeWatchId = navigator.geolocation.watchPosition(position => {
-        if (activeTracking?.id === sessionId && currentUser?.id === userId) rememberAltitude(position);
-      }, error => {
-        if (activeTracking?.id === sessionId && currentUser?.id === userId) {
-          setTrackingStatus(`GPS 고도 측정이 중단되었거나 지연되고 있습니다: ${error.message}. 위치 권한과 신호를 확인해 주세요.`, true);
-          if (error.code === 1) stopAltitudeWatch();
-        }
-      }, { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 });
-    }
-
-    async function refreshTracking() {
-      if (trackingBusy || !currentUser || !supabaseClient) return false;
-      const userId = currentUser?.id;
-      const version = ++profileLoadVersion;
-      trackingReady = false;
-      renderActiveTracking();
-      setTrackingStatus('기록을 불러오는 중입니다.');
-      try {
-        const { data, error } = await supabaseClient.from('tracking_sessions')
-          .select('id, course_id, started_at, max_altitude_m').eq('user_id', userId).is('ended_at', null).maybeSingle();
-        if (error) throw error;
-        if (currentUser?.id !== userId || version !== profileLoadVersion) return false;
-        if (activeTracking?.id !== data?.id) {
-          stopAltitudeWatch();
-          observedAltitude = data?.max_altitude_m ?? null;
-        }
-        activeTracking = data;
-        trackingReady = true;
-        setTrackingStatus('');
-        renderActiveTracking();
-        startAltitudeWatch();
-        await loadTrackingHistory();
-        return true;
-      } catch (error) {
-        if (currentUser?.id !== userId || version !== profileLoadVersion) return false;
-        setTrackingStatus(`기록을 불러오지 못했습니다: ${error.message} (데이터베이스 설정을 확인해 주세요.)`, true);
-        document.getElementById('tracking-summary').textContent = '기록을 불러오지 못했습니다.';
-        return false;
-      }
-    }
-
-    async function loadTrackingHistory() {
-      const userId = currentUser?.id;
-      const month = document.getElementById('tracking-month').value;
-      if (!userId || !/^\d{4}-\d{2}$/.test(month)) return;
-      const [year, monthNumber] = month.split('-').map(Number);
-      const start = new Date(year, monthNumber - 1, 1);
-      const end = new Date(year, monthNumber, 1);
-      const summary = document.getElementById('tracking-summary');
-      const history = document.getElementById('tracking-history');
-      summary.textContent = '기록을 불러오는 중입니다.';
-      history.textContent = '';
-      try {
-        const { data, error } = await supabaseClient.from('tracking_sessions')
-          .select('id, course_id, started_at, ended_at, max_altitude_m')
-          .eq('user_id', userId).not('ended_at', 'is', null)
-          .gte('started_at', start.toISOString()).lt('started_at', end.toISOString())
-          .order('started_at', { ascending: false });
-        if (error) throw error;
-        if (currentUser?.id !== userId || document.getElementById('tracking-month').value !== month) return;
-        summary.textContent = `${monthNumber}월 총 ${data.length}회`;
-        history.innerHTML = data.length ? data.map(row => {
-          const course = COURSES.find(item => item.id === row.course_id);
-          const minutes = Math.max(0, Math.floor((new Date(row.ended_at) - new Date(row.started_at)) / 60000));
-          const altitude = row.max_altitude_m === null ? '고도 측정값 없음' : `GPS 최고 고도 약 ${Math.round(row.max_altitude_m)}m`;
-          return `<div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs"><div class="font-bold text-slate-800">${escapeHTML(course?.title || row.course_id)}</div><div class="text-slate-500 mt-1">${escapeHTML(new Date(row.started_at).toLocaleString('ko-KR'))} · ${minutes}분 · ${escapeHTML(altitude)}</div></div>`;
-        }).join('') : '<p class="text-xs text-slate-500">이 달의 완료된 기록이 없습니다.</p>';
-      } catch (error) {
-        if (currentUser?.id === userId && document.getElementById('tracking-month').value === month) {
-          summary.textContent = `기록을 불러오지 못했습니다: ${error.message}`;
-        }
-      }
-    }
-
-    function getTrackingPosition() {
-      return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-          reject(new Error('이 기기에서 GPS 위치를 사용할 수 없습니다.'));
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(resolve, error => {
-          const message = error.code === 1 ? '위치 권한이 거부되었습니다. 브라우저 설정에서 허용해 주세요.'
-            : error.code === 3 ? '위치 확인 시간이 초과되었습니다. 다시 시도해 주세요.'
-            : '현재 위치를 확인하지 못했습니다. GPS와 네트워크를 확인해 주세요.';
-          reject(new Error(message));
-        }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
-      });
-    }
-
-    async function handleChatTracking() {
-      if (!trackingReady) {
-        await refreshTracking();
-        return;
-      }
-      if (activeTracking) await finishTracking();
-      else if (activeRoomCourseId) await beginRoomTracking(activeRoomCourseId);
-    }
-
-    async function beginRoomTracking(courseId) {
-      if (trackingBusy || !currentUser || activeRoomCourseId !== courseId) return;
-      if (!await refreshTracking() || activeRoomCourseId !== courseId) return;
-      if (trackingBusy || !currentUser) return;
-      if (activeTracking) {
-        setTrackingStatus(activeTracking.course_id === courseId
-          ? '진행 중인 산행 기록을 이어갑니다.'
-          : '다른 코스의 산행이 진행 중입니다. 기존 산행을 종료한 뒤 이 코스에서 기록을 시작하세요.', activeTracking.course_id !== courseId);
-        return;
-      }
-      const userId = currentUser.id;
-      trackingBusy = true;
-      renderActiveTracking();
-      setTrackingStatus('GPS 위치를 확인하는 중입니다.');
-      try {
-        const position = await getTrackingPosition();
-        if (currentUser?.id !== userId || activeRoomCourseId !== courseId) return;
-        const { latitude, longitude, altitude } = position.coords;
-        const maxAltitude = typeof altitude === 'number' && Number.isFinite(altitude) ? altitude : null;
-        const { data, error } = await supabaseClient.from('tracking_sessions')
-          .insert({ user_id: userId, course_id: courseId, start_lat: latitude, start_lng: longitude, max_altitude_m: maxAltitude })
-          .select('id, course_id, started_at, max_altitude_m').single();
-        if (error) throw error;
-        if (currentUser?.id !== userId) return;
-        activeTracking = data;
-        observedAltitude = data.max_altitude_m;
-        setTrackingStatus('GPS 산행 기록을 시작했습니다. 산행 후 종료 버튼을 눌러 주세요.');
-        startAltitudeWatch();
-      } catch (error) {
-        if (currentUser?.id === userId) {
-          setTrackingStatus(`산행 기록을 시작하지 못했습니다: ${error.message} 채팅은 이용할 수 있으며, GPS 기록을 다시 시작해 주세요.`, true);
-        }
-      } finally {
-        trackingBusy = false;
-        renderActiveTracking();
-      }
-    }
-
-    async function finishTracking() {
-      if (trackingBusy || !trackingReady || !currentUser || !activeTracking) return;
-      const userId = currentUser.id;
-      const session = activeTracking;
-      trackingBusy = true;
-      renderActiveTracking();
-      setTrackingStatus('종료 위치를 확인하는 중입니다.');
-      try {
-        const position = await getTrackingPosition();
-        if (currentUser?.id !== userId || activeTracking?.id !== session.id) return;
-        rememberAltitude(position);
-        stopAltitudeWatch();
-        const { data, error } = await supabaseClient.from('tracking_sessions')
-          .update({ ended_at: new Date().toISOString(), end_lat: position.coords.latitude, end_lng: position.coords.longitude, max_altitude_m: observedAltitude })
-          .eq('id', session.id).eq('user_id', userId).is('ended_at', null)
-          .select('id').single();
-        if (error) throw error;
-        if (!data) throw new Error('진행 중인 산행을 찾을 수 없습니다.');
-        if (currentUser?.id !== userId) return;
-        activeTracking = null;
-        observedAltitude = null;
-        setTrackingStatus('산행을 종료하고 기록을 저장했습니다.');
-        await loadTrackingHistory();
-      } catch (error) {
-        if (currentUser?.id === userId) {
-          setTrackingStatus(`산행을 종료하지 못했습니다: ${error.message} 다시 시도해 주세요.`, true);
-          startAltitudeWatch();
-        }
-      } finally {
-        trackingBusy = false;
-        renderActiveTracking();
-      }
-    }
-
-    function updateAccountButton() {
-      const button = document.getElementById('btn-account');
-      if (!button) return;
-      button.textContent = currentUser ? '로그아웃' : '로그인 / 가입';
-      button.title = currentUser?.username || '회원 로그인';
-    }
-
-    function setAuthFeedback(message, type = 'error') {
-      const feedback = document.getElementById('auth-feedback');
-      feedback.textContent = message;
-      feedback.className = `text-xs rounded-xl p-2.5 ${type === 'error' ? 'bg-red-50 text-red-700' : 'bg-forest-50 text-forest-800'}`;
-    }
-
-    function authErrorMessage(error, mode) {
-      const detail = error.errors?.[0]?.longMessage || error.errors?.[0]?.message || error.message;
-      return `${mode === 'signup' ? '회원가입' : '로그인'}에 실패했습니다: ${detail || '인증 서버 오류'}`;
-    }
-
-    function setAuthMode(mode) {
-      authMode = mode;
-      const isSignup = mode === 'signup';
-      document.getElementById('auth-title').textContent = isSignup ? '회원가입' : '로그인';
-      document.getElementById('auth-name-wrap').classList.toggle('hidden', !isSignup);
-      document.getElementById('auth-display-name').required = isSignup;
-      document.getElementById('auth-password').autocomplete = isSignup ? 'new-password' : 'current-password';
-      document.getElementById('auth-password').minLength = isSignup ? 8 : 1;
-      document.getElementById('auth-password-label').textContent = isSignup ? '비밀번호 (8자 이상)' : '비밀번호';
-      document.getElementById('btn-submit-auth').textContent = isSignup ? '회원가입' : '로그인';
-      document.getElementById('btn-toggle-auth-mode').textContent = isSignup
-        ? '이미 계정이 있으신가요? 로그인'
-        : '계정이 없으신가요? 회원가입';
-      document.getElementById('auth-feedback').classList.add('hidden');
-    }
-
-    function toggleAuthMode() {
-      setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
-    }
-
-    async function handleAccountAction() {
-      if (!isSupabaseConfigured() || !supabaseClient) {
-        showToast('로그인 서버 설정이 필요합니다.');
-        return;
-      }
-      if (currentUser) {
-        try {
-          await window.Clerk.signOut();
-        } catch (error) {
-          showToast(`로그아웃하지 못했습니다: ${error.message}`);
-        }
-        return;
-      }
-
-      pendingRoomCourseId = null;
-      document.getElementById('auth-context').textContent = '로그인하면 코스별 회원 전용 소통방을 이용할 수 있습니다.';
-      setAuthMode('signin');
-      openModal('modal-auth');
-    }
-
-    async function submitAuth(event) {
-      event.preventDefault();
-      if (!supabaseClient) {
-        setAuthFeedback('Supabase 설정을 먼저 완료해 주세요.');
-        return;
-      }
-
-      const button = document.getElementById('btn-submit-auth');
-      const username = document.getElementById('auth-username').value.trim();
-      const password = document.getElementById('auth-password').value;
-      const displayName = document.getElementById('auth-display-name').value.trim();
-      if (authMode === 'signup' && !displayName) {
-        setAuthFeedback('닉네임을 입력해 주세요.');
-        return;
-      }
-      button.disabled = true;
-      button.classList.add('opacity-50');
-      document.getElementById('auth-feedback').classList.add('hidden');
-
-      try {
-        const result = authMode === 'signup'
-          ? await window.Clerk.client.signUp.create({ username, password, unsafeMetadata: { display_name: displayName } })
-          : await window.Clerk.client.signIn.create({ identifier: username, password });
-        if (result.status !== 'complete' || !result.createdSessionId) {
-          setAuthFeedback('추가 인증 또는 가입 설정이 필요합니다. 관리자에게 문의해 주세요.');
-          return;
-        }
-
-        await window.Clerk.setActive({ session: result.createdSessionId });
-        currentUser = window.Clerk.user;
-        updateAccountButton();
-        closeAllModals();
-        const courseId = pendingRoomCourseId || localStorage.getItem('pending-course-room-id');
-        pendingRoomCourseId = null;
-        if (courseId) {
-          localStorage.removeItem('pending-course-room-id');
-          await enterCourseRoom(courseId);
-        } else {
-          showToast('로그인되었습니다.');
-        }
-      } catch (error) {
-        setAuthFeedback(authErrorMessage(error, authMode));
-      } finally {
-        button.disabled = false;
-        button.classList.remove('opacity-50');
-      }
-    }
-
-    async function enterCourseRoom(courseId) {
-      const course = COURSES.find(item => item.id === courseId);
-      if (!course || !currentUser || !supabaseClient) {
-        showToast('로그인과 코스 선택을 확인해 주세요.');
-        return;
-      }
-
-      selectedCourse = course;
-      hasSelectedCourse = true;
-      updateCourseBoundUI();
-      showToast('코스 소통방 입장을 확인하는 중입니다.');
-
-      try {
-        const { data: membership, error: lookupError } = await supabaseClient
-          .from('course_room_members')
-          .select('user_id')
-          .eq('course_id', courseId)
-          .eq('user_id', currentUser.id)
-          .maybeSingle();
-        if (lookupError) throw lookupError;
-
-        if (!membership) {
-          const { error: joinError } = await supabaseClient
-            .from('course_room_members')
-            .insert({
-              course_id: courseId,
-              user_id: currentUser.id,
-              display_name: getDisplayName(currentUser)
-            });
-          if (joinError) throw joinError;
-        }
-
-        activeRoomCourseId = courseId;
-        closeAllModals();
-        goToStep(3);
-        await stopRoomSubscription();
-        await loadRoomMessages(courseId);
-        subscribeToRoom(courseId);
-        showChatStatus(`${course.title} 실시간 소통방에 입장했습니다.`, 'success');
-        void beginRoomTracking(courseId);
-      } catch (error) {
-        activeRoomCourseId = null;
-        goToStep(2);
-        showToast(`소통방에 입장하지 못했습니다: ${error.message}`);
-      }
-    }
-
-    async function loadRoomMessages(courseId) {
-      chatMessages = [];
-      renderChat();
-      const { data, error } = await supabaseClient
-        .from('course_room_messages')
-        .select('id, course_id, user_id, display_name, body, created_at')
-        .eq('course_id', courseId)
-        .order('created_at', { ascending: true })
-        .limit(100);
-      if (error) throw error;
-      chatMessages = data || [];
-      renderChat();
-    }
-
-    function subscribeToRoom(courseId) {
-      chatSubscription = supabaseClient
-        .channel(`course-room-${courseId}`)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'course_room_messages',
-          filter: `course_id=eq.${courseId}`
-        }, payload => appendChatMessage(payload.new))
-        .subscribe(status => {
-          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            showChatStatus('실시간 연결이 끊겼습니다. 네트워크와 Supabase 설정을 확인해 주세요.');
-          }
-        });
-    }
-
-    async function stopRoomSubscription() {
-      if (!chatSubscription || !supabaseClient) return;
-      const channel = chatSubscription;
-      chatSubscription = null;
-      await supabaseClient.removeChannel(channel);
-    }
-
-    async function leaveCourseRoom() {
-      if (!currentUser || !activeRoomCourseId || !supabaseClient) {
-        goToStep(2);
-        return;
-      }
-
-      const courseId = activeRoomCourseId;
-      const { error } = await supabaseClient
-        .from('course_room_members')
-        .delete()
-        .eq('course_id', courseId)
-        .eq('user_id', currentUser.id);
-      if (error) {
-        showChatStatus(`방에서 나가지 못했습니다: ${error.message}`);
-        return;
-      }
-
-      activeRoomCourseId = null;
-      await stopRoomSubscription();
-      goToStep(2);
-      showToast('소통방에서 나왔습니다. 다시 입장하려면 동의가 필요합니다.');
-    }
-
-    function updateAltitude(val) {
-      const alt = Number(val);
-      const readout = document.getElementById('altitude-readout');
-      const banner = document.getElementById('altitude-warning-banner');
-      const signalText = document.getElementById('status-signal-text');
-
-      readout.textContent = `해발 ${alt.toLocaleString()}m`;
-
-      if (alt >= 650) {
-        banner.classList.remove('hidden');
-        readout.className = 'text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800';
-        signalText.textContent = '전파 약함 (오프라인)';
-        signalText.className = 'text-[10px] text-amber-300 font-semibold';
-      } else {
-        banner.classList.add('hidden');
-        readout.className = 'text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-forest-100 text-forest-800';
-        signalText.textContent = 'LTE 양호';
-        signalText.className = 'text-[10px] text-emerald-300 font-semibold';
-      }
-    }
-
-    function openModal(id) {
-      document.getElementById('modal-backdrop').classList.remove('hidden');
-      document.querySelectorAll('.app-modal').forEach(modal => {
-        modal.classList.toggle('hidden', modal.id !== id);
-      });
-    }
-
-    function closeAllModals() {
-      document.getElementById('modal-backdrop').classList.add('hidden');
-    }
-
-    async function initializeSupabase() {
-      try {
-        if (!window.Clerk || !window.supabase) throw new Error('인증 또는 채팅 라이브러리를 불러오지 못했습니다.');
-        await window.Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY, {
-          accessToken: async () => await window.Clerk.session?.getToken() ?? null
-        });
-        clerkReady = true;
-        currentUser = window.Clerk.user;
-        updateAccountButton();
-        if (currentUser) void refreshTracking();
-        window.Clerk.addListener(({ user }) => {
-          const previousUserId = currentUser?.id;
-          currentUser = user;
-          updateAccountButton();
-          if (previousUserId && previousUserId !== user?.id) {
-            profileLoadVersion++;
-            stopAltitudeWatch();
-            activeTracking = null;
-            observedAltitude = null;
-            trackingReady = false;
-            if (!document.getElementById('screen-5').classList.contains('hidden')) goToStep(1);
-          }
-          if (user && previousUserId !== user.id) void refreshTracking();
-          if (!user && activeRoomCourseId) {
-            activeRoomCourseId = null;
-            void stopRoomSubscription();
-            if (!document.getElementById('screen-3').classList.contains('hidden')) goToStep(2);
-          }
-        });
-        const pendingCourseId = localStorage.getItem('pending-course-room-id');
-        if (currentUser && pendingCourseId) {
-          localStorage.removeItem('pending-course-room-id');
-          await enterCourseRoom(pendingCourseId);
-        }
-      } catch (error) {
-        showToast(`로그인 서버에 연결하지 못했습니다: ${error.message}`);
-      }
-    }
-
-    // Initialize on load
-    window.addEventListener('DOMContentLoaded', async () => {
-      renderCourses();
-      updateCourseBoundUI();
-      renderChat();
-      await initializeSupabase();
-    });
-  </script>
+  <script src="js/courses.js"></script>
+  <script src="js/recommendations.js"></script>
+  <script src="js/safety.js"></script>
+  <script src="js/data-service.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

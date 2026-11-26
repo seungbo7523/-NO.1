@@ -10,8 +10,16 @@ create table if not exists public.tracking_sessions (
   start_lng double precision not null check (start_lng between -180 and 180),
   end_lat double precision check (end_lat between -90 and 90),
   end_lng double precision check (end_lng between -180 and 180),
-  check ((ended_at is null and end_lat is null and end_lng is null)
-      or (ended_at is not null and end_lat is not null and end_lng is not null and ended_at >= started_at))
+  constraint tracking_sessions_end_state_check check (
+    (ended_at is null and end_lat is null and end_lng is null)
+    or (
+      ended_at is not null and ended_at >= started_at
+      and (
+        (end_lat is null and end_lng is null)
+        or (end_lat is not null and end_lng is not null)
+      )
+    )
+  )
 );
 
 create unique index if not exists tracking_sessions_one_active_per_user
