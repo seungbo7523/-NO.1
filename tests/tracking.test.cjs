@@ -1,12 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
 const vm = require('node:vm');
+const loadAppSource = require('./helpers/app-source.cjs');
 
 function setup() {
-  const html = fs.readFileSync('index.html', 'utf8');
-  const script = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)]
-    .map(match => match[1]).find(text => text.includes('const COURSES'));
+  const script = loadAppSource();
   const elements = new Map();
   function element(id) {
     if (!elements.has(id)) elements.set(id, {
@@ -19,6 +17,7 @@ function setup() {
   let watchCallback;
   let altitude = 120;
   let denied = false;
+  let timedOut = false;
   const db = {
     from(table) {
       if (table === 'course_room_members') {
@@ -68,6 +67,7 @@ function setup() {
   const geolocation = {
     getCurrentPosition(success, failure) {
       if (denied) failure({ code: 1 });
+      else if (timedOut) failure({ code: 3 });
       else success({ coords: { latitude: 35, longitude: 128, altitude } });
     },
     watchPosition(success) { watchCallback = success; return 1; },
@@ -93,6 +93,7 @@ function setup() {
     api: context.trackingTest, rows, element,
     setAltitude(value) { altitude = value; },
     setDenied(value) { denied = value; },
+    setTimedOut(value) { timedOut = value; },
     watch(value) { watchCallback({ coords: { altitude: value } }); }
   };
 }
@@ -132,6 +133,18 @@ test('denied GPS does not create a record and can be retried', async () => {
   assert.equal(app.rows.length, 0);
   assert.match(app.element('chat-tracking-status').textContent, /권한이 거부/);
   app.setDenied(false);
+  await app.api.beginRoomTracking('cheonjusan');
+  assert.equal(app.rows.length, 1);
+});
+
+test('GPS timeout is surfaced and a later location fix can start tracking', async () => {
+  const app = setup();
+  app.setTimedOut(true);
+  await app.api.beginRoomTracking('cheonjusan');
+  assert.equal(app.rows.length, 0);
+  assert.match(app.element('chat-tracking-status').textContent, /시간이 초과/);
+
+  app.setTimedOut(false);
   await app.api.beginRoomTracking('cheonjusan');
   assert.equal(app.rows.length, 1);
 });

@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
+const loadAppSource = require('./helpers/app-source.cjs');
 
 test('satellite map integrations are removed while safety guidance remains', () => {
   const html = fs.readFileSync('index.html', 'utf8');
@@ -10,6 +11,8 @@ test('satellite map integrations are removed while safety guidance remains', () 
   assert.doesNotMatch(html, /GOOGLE_MAPS_API_KEY|maps\.googleapis\.com|course-map|mapCenter|mapZoom|위성지도|위성 지도|위성사진/);
   assert.doesNotMatch(readme, /Google 위성 지도 설정|GOOGLE_MAPS_API_KEY|위성지도 API/i);
   assert.match(html, /id="screen-4"/);
+  assert.match(html, /src="js\/courses.js"/);
+  assert.match(html, /src="js\/app.js"/);
   assert.match(html, /id="altitude-slider"/);
   assert.match(html, /openModal\('modal-sos'\)/);
   assert.match(html, /id="safety-map-title"/);
@@ -30,9 +33,7 @@ test('satellite map integrations are removed while safety guidance remains', () 
 });
 
 test('terrain profiles update for each selected course and use the course distance', () => {
-  const html = fs.readFileSync('index.html', 'utf8');
-  const script = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)]
-    .map(match => match[1]).find(text => text.includes('const COURSES'));
+  const script = loadAppSource();
   const elements = new Map();
   function element(id) {
     if (!elements.has(id)) elements.set(id, {
