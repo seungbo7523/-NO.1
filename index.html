@@ -7,8 +7,6 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script defer crossorigin="anonymous" src="https://holy-elk-6013.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js"></script>
   <script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_aG9seS1lbGstNjAxMy5jbGVyay5hY2NvdW50cy5kZXYk" src="https://holy-elk-6013.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js"></script>
   <!-- Google Fonts: Noto Sans KR & Inter -->
@@ -400,18 +398,18 @@
               <div class="flex items-center justify-between mb-2">
                 <div>
                   <h2 id="map-course-name" class="text-sm font-extrabold text-slate-900">천주산 주변 위성 지도</h2>
-                  <p class="text-[10px] text-slate-500">MapTiler 위성사진 · 선택 코스 주변 위치 참고</p>
+                  <p class="text-[10px] text-slate-500">Google 위성사진 · 선택 코스 주변 위치 참고</p>
                 </div>
                 <button onclick="openModal('modal-sos')" class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-sm">
                   🚨 119 / 지점번호
                 </button>
               </div>
-              <div id="course-map" role="application" aria-label="선택한 산 코스 주변 MapTiler 위성 지도" class="w-full h-64 rounded-xl overflow-hidden border border-slate-200 bg-slate-100"></div>
+              <div id="course-map" role="application" aria-label="선택한 산 코스 주변 Google 위성 지도" class="w-full h-64 rounded-xl overflow-hidden border border-slate-200 bg-slate-100"></div>
               <div class="flex items-start justify-between gap-2 mt-2">
                 <p id="map-status" role="status" class="text-[10px] text-slate-500">
                   지도 위치는 코스 주변 참고 지점입니다. 실제 산행 경로와 현재 위치를 표시하지 않습니다.
                 </p>
-                <a id="open-course-map" href="https://maps.google.com/" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[10px] font-bold text-forest-700 hover:underline">
+                <a id="open-google-map" href="https://maps.google.com/" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[10px] font-bold text-forest-700 hover:underline">
                   Google 지도 열기 ↗
                 </a>
               </div>
@@ -842,7 +840,7 @@
 
     const SUPABASE_URL = 'https://vfhjvelxirfgastdqohq.supabase.co';
     const SUPABASE_PUBLIC_KEY = 'sb_publishable_n5qdZiWcLJ9oA6swElKrBg_venzzx-O';
-    const MAPTILER_API_KEY = '__MAPTILER_API_KEY__';
+    const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
 
     let selectedCourse = COURSES[0];
     let currentFilter = '전체';
@@ -856,9 +854,11 @@
     let chatSubscription = null;
     let chatMessages = [];
     let authMode = 'signin';
+    let googleMapsLoader = null;
     let courseMap = null;
     let courseMapMarker = null;
     let courseMapInitializing = false;
+    let googleMapsAuthFailed = false;
     let activeTracking = null;
     let trackingReady = false;
     let trackingBusy = false;
@@ -1019,56 +1019,81 @@
     function updateCourseMapLocation() {
       if (!selectedCourse?.mapCenter) return;
       const { lat, lng } = selectedCourse.mapCenter;
-      document.getElementById('open-course-map').href =
+      document.getElementById('open-google-map').href =
         `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`;
       if (courseMap && courseMapMarker) {
-        courseMap.setView([lat, lng], selectedCourse.mapZoom);
-        courseMapMarker.setLatLng([lat, lng]);
-        courseMapMarker.bindPopup(selectedCourse.title);
+        courseMap.setCenter(selectedCourse.mapCenter);
+        courseMap.setZoom(selectedCourse.mapZoom);
+        courseMapMarker.setPosition(selectedCourse.mapCenter);
+        courseMapMarker.setTitle(selectedCourse.title);
       }
+    }
+
+    function loadGoogleMaps() {
+      if (window.google?.maps) return Promise.resolve();
+      if (googleMapsLoader) return googleMapsLoader;
+      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
+        return Promise.reject(new Error('Google Maps API 키가 설정되지 않았습니다.'));
+      }
+
+      googleMapsLoader = new Promise((resolve, reject) => {
+        const callbackName = 'onGoogleMapsLoaded';
+        window[callbackName] = () => {
+          delete window[callbackName];
+          resolve();
+        };
+        window.gm_authFailure = () => {
+          googleMapsAuthFailed = true;
+          setCourseMapStatus('Google Maps API 인증에 실패했습니다. API 키, Maps JavaScript API 및 결제 설정을 확인해 주세요.', true);
+        };
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&callback=${callbackName}`;
+        script.async = true;
+        script.onerror = () => {
+          delete window[callbackName];
+          googleMapsLoader = null;
+          reject(new Error('Google Maps 스크립트를 불러오지 못했습니다.'));
+        };
+        document.head.appendChild(script);
+      });
+      return googleMapsLoader;
     }
 
     async function initializeCourseMap() {
       updateCourseMapLocation();
-      if (!MAPTILER_API_KEY || MAPTILER_API_KEY.startsWith('__')) {
-        setCourseMapStatus('위성사진 표시를 위한 MapTiler 키가 배포 설정에 없습니다. Google 지도 링크를 이용해 주세요.', true);
-        return;
-      }
-      if (!window.L) {
-        setCourseMapStatus('지도 라이브러리를 불러오지 못했습니다. 네트워크 연결을 확인해 주세요.', true);
+      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
+        setCourseMapStatus('Google Maps API 키 설정이 필요합니다. 키를 설정하면 선택 코스 주변 위성사진이 표시됩니다.');
         return;
       }
       if (courseMap || courseMapInitializing) {
-        if (courseMap) {
-          courseMap.invalidateSize();
-          updateCourseMapLocation();
-        }
+        if (courseMap) google.maps.event.trigger(courseMap, 'resize');
         return;
       }
 
       courseMapInitializing = true;
-      setCourseMapStatus('MapTiler 위성사진을 불러오는 중입니다.');
+      setCourseMapStatus('Google 위성사진을 불러오는 중입니다.');
       try {
-        const { lat, lng } = selectedCourse.mapCenter;
-        courseMap = window.L.map('course-map', { scrollWheelZoom: false })
-          .setView([lat, lng], selectedCourse.mapZoom);
-        window.L.tileLayer(
-          `https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key=${encodeURIComponent(MAPTILER_API_KEY)}`,
-          {
-            tileSize: 512,
-            zoomOffset: -1,
-            maxZoom: 20,
-            attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">&copy; OpenStreetMap contributors</a>'
-          }
-        ).on('tileerror', () => {
-          setCourseMapStatus('위성사진을 불러오지 못했습니다. API 키의 도메인 제한과 무료 사용량을 확인해 주세요.', true);
-        }).addTo(courseMap);
-        courseMapMarker = window.L.marker([lat, lng]).addTo(courseMap);
-        courseMapMarker.bindPopup(selectedCourse.title);
-        setCourseMapStatus('선택 코스 주변의 참고 지점입니다. 검증된 산행 경로, 현재 위치 또는 안전·시설 정보를 표시하지 않습니다.');
+        await loadGoogleMaps();
+        const mapElement = document.getElementById('course-map');
+        courseMap = new google.maps.Map(mapElement, {
+          center: selectedCourse.mapCenter,
+          zoom: selectedCourse.mapZoom,
+          mapTypeId: 'satellite',
+          streetViewControl: false,
+          mapTypeControl: true,
+          fullscreenControl: true
+        });
+        courseMapMarker = new google.maps.Marker({
+          map: courseMap,
+          position: selectedCourse.mapCenter,
+          title: selectedCourse.title
+        });
+        if (!googleMapsAuthFailed) {
+          setCourseMapStatus('선택 코스 주변의 참고 지점입니다. 검증된 산행 경로, 현재 위치 또는 안전·시설 정보를 표시하지 않습니다.');
+        }
       } catch (error) {
-        console.error('MapTiler map loading failed:', error);
-        setCourseMapStatus(`위성지도를 표시하지 못했습니다: ${error.message} Google 지도를 링크로 열어 위치를 확인할 수 있습니다.`, true);
+        console.error('Google Maps loading failed:', error);
+        setCourseMapStatus(`${error.message} Google 지도를 링크로 열어 위치를 확인할 수 있습니다.`, true);
       } finally {
         courseMapInitializing = false;
       }
