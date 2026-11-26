@@ -22,6 +22,8 @@ AI 산·코스 추천, 현장 소통, 장비 대여/거래, 크루 GPS 위치 �
 
 `index.html`은 이슈 #2에 첨부된 TrailMate 경남 시연용 프로토타입입니다. 코스를 선택하면 해당 코스 소통방 입장 동의를 확인하고, 아이디·비밀번호 로그인 후 회원으로 참여합니다. Clerk와 Supabase를 설정하면 코스별 채팅 메시지가 저장되고 실시간으로 공유됩니다. GPS·고도 안내와 지도 데이터는 시연용 로컬 시뮬레이션이며 실제 위치 공유, 공공데이터 연동 또는 긴급 신고 기능은 제공하지 않습니다.
 
+해커톤 MVP의 아키텍처, 데이터 흐름, 보안 경계와 검증 기준은 [TRD](TRD.md)를 참고하세요.
+
 ### 실시간 소통방 설정
 
 1. Supabase SQL Editor에서 [`supabase/schema.sql`](supabase/schema.sql)을 실행한 후 [`supabase/clerk-migration.sql`](supabase/clerk-migration.sql)을 실행합니다. 기존 프로젝트에서는 두 번째 파일만 실행합니다. 기존 데이터는 유지되지만 기존 Supabase 계정이 Clerk 계정으로 자동 이전되지는 않습니다.
