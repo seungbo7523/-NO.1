@@ -1149,6 +1149,13 @@
       feedback.className = `text-xs rounded-xl p-2.5 ${type === 'error' ? 'bg-red-50 text-red-700' : 'bg-forest-50 text-forest-800'}`;
     }
 
+    function authErrorMessage(error, mode) {
+      if (error.code === 'over_email_send_rate_limit' || /email rate limit exceeded/i.test(error.message || '')) {
+        return '인증 메일 발송 한도에 도달했습니다. 잠시 기다린 후 다시 시도해 주세요. 계속 발생하면 사이트 관리자에게 문의해 주세요.';
+      }
+      return `${mode === 'signup' ? '회원가입' : '로그인'}에 실패했습니다: ${error.message}`;
+    }
+
     function setAuthMode(mode) {
       authMode = mode;
       const isSignup = mode === 'signup';
@@ -1237,7 +1244,7 @@
           showToast('로그인되었습니다.');
         }
       } catch (error) {
-        setAuthFeedback(`로그인에 실패했습니다: ${error.message}`);
+        setAuthFeedback(authErrorMessage(error, authMode));
       } finally {
         button.disabled = false;
         button.classList.remove('opacity-50');

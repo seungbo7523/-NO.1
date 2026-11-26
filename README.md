@@ -29,4 +29,6 @@ AI 산·코스 추천, 현장 소통, 장비 대여/거래, 크루 GPS 위치 �
 3. 현재 Supabase Project URL과 publishable key는 `index.html`의 `SUPABASE_URL`, `SUPABASE_PUBLIC_KEY`에 설정되어 있습니다. 다른 프로젝트를 연결할 때만 값을 바꾸고, `service_role` 또는 secret key는 브라우저 코드에 넣지 마세요.
 4. 변경사항을 `main`에 반영하면 GitHub Pages가 다시 배포됩니다. Supabase 설정 전에는 입장 확인창에서 서버 미설정 안내가 표시됩니다.
 
+Supabase 기본 인증 메일은 프로젝트당 시간당 2건으로 제한되며 프로젝트 팀에 등록된 주소에만 발송할 수 있습니다. 일반 방문자의 회원가입을 위해서는 [별도의 SMTP 발송 서비스 설정](https://supabase.com/docs/guides/auth/auth-smtp)과 Supabase의 **Authentication → Rate Limits** 조정이 필요합니다. 발송 한도 오류가 발생하면 한도가 회복된 후 다시 시도하세요. SMTP 비밀번호 등 비밀 값은 Supabase 설정에만 입력하고 저장소에 넣지 마세요.
+
 `main` 브랜치에 반영되면 `.github/workflows/deploy-pages.yml`이 GitHub Pages 배포를 수행하고 Pages 활성화를 시도합니다. 저장소 정책이나 권한으로 자동 활성화되지 않으면 GitHub 저장소 설정에서 Pages 배포 원본을 **GitHub Actions**로 지정하세요.
