@@ -29,4 +29,6 @@ AI 산·코스 추천, 현장 소통, 장비 대여/거래, 크루 GPS 위치 �
 3. [Clerk와 Supabase의 third-party auth 연동](https://clerk.com/docs/guides/development/integrations/databases/supabase)을 활성화합니다. 현재 공개 키는 개발 인스턴스용이므로 실제 서비스에는 운영 인스턴스와 도메인이 필요합니다.
 4. 프로젝트 URL과 공개 키는 `index.html`에 설정되어 있습니다. 비밀 키는 브라우저 코드에 넣지 마세요. 변경사항을 `main`에 반영하면 GitHub Pages가 배포됩니다.
 
+현재 Clerk 가입 비밀번호는 15자 이상이어야 합니다. Clerk의 비밀번호 정책을 변경하면 가입 화면의 최소 길이 안내와 입력 제한도 함께 변경하세요.
+
 `main` 브랜치에 반영되면 `.github/workflows/deploy-pages.yml`이 GitHub Pages 배포를 수행하고 Pages 활성화를 시도합니다. 저장소 정책이나 권한으로 자동 활성화되지 않으면 GitHub 저장소 설정에서 Pages 배포 원본을 **GitHub Actions**로 지정하세요.
