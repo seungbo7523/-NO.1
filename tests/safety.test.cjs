@@ -14,6 +14,9 @@ test('satellite map integrations are removed while safety guidance remains', () 
   assert.match(html, /openModal\('modal-sos'\)/);
   assert.match(html, /id="terrain-profile-chart"/);
   assert.match(html, /참고용 추정/);
+  assert.match(html, /id="safety-data-course-title"/);
+  assert.match(html, /위치를 표시하지 않습니다/);
+  assert.match(html, /임의로 생성하지 않습니다/);
 });
 
 test('terrain profiles update for each selected course and use the course distance', () => {
@@ -41,6 +44,7 @@ test('terrain profiles update for each selected course and use the course distan
       select(id) {
         selectedCourse = COURSES.find(course => course.id === id);
         updateTerrainProfile();
+        updateCourseBoundUI();
       }
     };`, context);
 
@@ -51,5 +55,6 @@ test('terrain profiles update for each selected course and use the course distan
     assert.match(element('terrain-profile-line').attributes.d, /^M.+L/);
     assert.match(element('terrain-profile-area').attributes.d, /Z$/);
     assert.match(element('terrain-profile-title').textContent, /지형 단면$/);
+    assert.equal(element('safety-data-course-title').textContent, context.profileTest.courses.find(course => course.id === id).title);
   }
 });

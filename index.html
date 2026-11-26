@@ -429,16 +429,23 @@
               </div>
             </div>
 
-            <!-- Safety & Facility Summary Cards -->
-            <div class="grid grid-cols-2 gap-2">
-              <div class="bg-red-50 border border-red-200 rounded-xl p-2.5">
-                <div class="text-[11px] font-extrabold text-red-800">⚠️ 사고 정보 미연동</div>
-                <p class="text-[10px] text-red-700 mt-0.5 leading-snug">사고 다발지역 데이터는 제공되지 않습니다. 산행 전 공식 정보를 확인하세요.</p>
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h3 class="text-xs font-extrabold text-slate-800">휴게시설·사고 다발 구간</h3>
+                  <p class="text-[10px] text-slate-500 mt-0.5">선택 코스: <span id="safety-data-course-title">창원 천주산 진달래길 코스</span></p>
+                </div>
+                <span class="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[9px] font-bold text-slate-600">자료 미연동</span>
               </div>
               <div class="bg-sky-50 border border-sky-200 rounded-xl p-2.5">
-                <div class="text-[11px] font-extrabold text-sky-800">🏥 시설 정보 미연동</div>
-                <p class="text-[10px] text-sky-700 mt-0.5 leading-snug">휴게시설·구급함 위치는 제공되지 않습니다.</p>
+                <div class="text-[11px] font-extrabold text-sky-800">🏥 휴게시설 위치</div>
+                <p class="text-[10px] text-sky-700 mt-0.5 leading-snug">공식 위치 자료가 연결되지 않아 휴게소·구급함 위치를 표시하지 않습니다.</p>
               </div>
+              <div class="bg-red-50 border border-red-200 rounded-xl p-2.5">
+                <div class="text-[11px] font-extrabold text-red-800">⚠️ 사고 다발 구간</div>
+                <p class="text-[10px] text-red-700 mt-0.5 leading-snug">검증된 사고 통계가 연결되지 않아 해당 구간을 표시하지 않습니다.</p>
+              </div>
+              <p class="text-[10px] leading-relaxed text-slate-600">위치는 임의로 생성하지 않습니다. 공식 출처와 갱신일을 확인한 자료가 연결되기 전까지 이 화면을 안전 판단에 사용하지 마세요.</p>
             </div>
           </section>
 
@@ -980,6 +987,7 @@
       // Step 2 UI
       document.getElementById('detail-region').textContent = selectedCourse.region;
       document.getElementById('detail-title').textContent = selectedCourse.title;
+      document.getElementById('safety-data-course-title').textContent = selectedCourse.title;
       document.getElementById('detail-desc').textContent = selectedCourse.desc;
       document.getElementById('detail-distance').textContent = selectedCourse.distance;
       document.getElementById('detail-duration').textContent = selectedCourse.duration;
