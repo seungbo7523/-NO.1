@@ -6,6 +6,7 @@
   <title>TrailMate 경남 — 2030 스마트 산행 플랫폼 프로토타입 (팀 IMPACT)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Google Fonts: Noto Sans KR & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -119,9 +120,14 @@
               </svg>
               <span class="font-extrabold text-base tracking-tight">TrailMate 경남</span>
             </div>
-            <button onclick="openModal('modal-guide')" class="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg font-medium transition">
-              시연 안내
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-account" onclick="handleAccountAction()" class="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg font-medium transition">
+                로그인 / 가입
+              </button>
+              <button onclick="openModal('modal-guide')" class="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg font-medium transition">
+                시연 안내
+              </button>
+            </div>
           </div>
 
           <!-- 4-Step Progress Bar -->
@@ -292,7 +298,7 @@
 
             <!-- Primary Flow CTAs -->
             <div class="space-y-2 pt-1">
-              <button onclick="goToStep(3)" class="w-full py-3.5 px-4 rounded-2xl bg-forest-700 hover:bg-forest-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+              <button onclick="requestCourseRoomEntry()" class="w-full py-3.5 px-4 rounded-2xl bg-forest-700 hover:bg-forest-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
                 <span>👥 크루 합류 및 현장 소통방 이동</span>
                 <span>→</span>
               </button>
@@ -310,12 +316,12 @@
                 <div>
                   <div class="flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <h2 id="chat-room-title" class="text-sm font-extrabold text-slate-900">천주산 주말 2030 크루방</h2>
+                    <h2 id="chat-room-title" class="text-sm font-extrabold text-slate-900">코스 소통방</h2>
                   </div>
-                  <p class="text-[11px] text-slate-500 mt-0.5">참여 인원 <strong id="crew-count" class="text-forest-700">6명</strong> · 하산 후 마산역 택시 셰어 모집 중</p>
+                  <p class="text-[11px] text-slate-500 mt-0.5">로그인한 회원만 참여할 수 있는 코스별 실시간 소통방</p>
                 </div>
-                <button id="btn-join-crew" onclick="toggleJoinCrew()" class="px-3 py-1.5 rounded-xl bg-forest-700 text-white text-xs font-bold shadow-sm transition">
-                  크루 합류하기
+                <button onclick="leaveCourseRoom()" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold transition">
+                  방 나가기
                 </button>
               </div>
 
@@ -330,19 +336,12 @@
                 </button>
               </div>
 
-              <!-- Offline Queue Simulation Toggle (For Mountain Dead-Zone Demo) -->
-              <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
-                <span class="text-[11px] text-slate-600 font-medium">📶 산속 통신 약함 시뮬레이션 (로컬 큐 저장)</span>
-                <button id="btn-sim-weak-signal" onclick="toggleWeakSignalChat()" class="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">
-                  정상 통신 중
-                </button>
-              </div>
             </div>
 
+            <p id="chat-status" role="status" class="hidden text-[11px] rounded-xl px-3 py-2"></p>
+
             <!-- Chat Messages Feed -->
-            <div id="chat-messages" class="flex-1 min-h-[230px] max-h-[270px] overflow-y-auto phone-scroll bg-white rounded-2xl p-3 border border-slate-200 space-y-2.5">
-              <!-- Initial messages injected via JS -->
-            </div>
+            <div id="chat-messages" aria-live="polite" class="flex-1 min-h-[230px] max-h-[270px] overflow-y-auto phone-scroll bg-white rounded-2xl p-3 border border-slate-200 space-y-2.5"></div>
 
             <!-- Quick Status Chips (Lightweight Packets) -->
             <div class="flex gap-1.5 overflow-x-auto pb-0.5">
@@ -359,7 +358,7 @@
 
             <!-- Chat Input Form -->
             <form onsubmit="handleSendChat(event)" class="flex gap-2">
-              <input id="chat-input" type="text" placeholder="날씨·장비·하산 소통 메시지 입력..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
+              <input id="chat-input" type="text" maxlength="1000" required placeholder="날씨·장비·하산 소통 메시지 입력..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
               <button type="submit" class="px-4 py-2.5 rounded-xl bg-forest-700 hover:bg-forest-800 text-white font-bold text-xs shrink-0">
                 전송
               </button>
@@ -627,8 +626,52 @@
 
   <!-- ==================== MODALS (SOS, TRAIL EVENT, GEAR, DEMO GUIDE) ==================== -->
   <div id="modal-backdrop" onclick="closeAllModals()" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 flex items-center justify-center p-4">
+    <!-- Course Room Consent Modal -->
+    <div id="modal-room-confirm" onclick="event.stopPropagation()" class="app-modal hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-slate-900 text-base">코스 소통방에 입장할까요?</h3>
+        <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+      </div>
+      <div class="rounded-xl bg-forest-50 border border-forest-200 p-3">
+        <p class="text-[11px] text-forest-700">선택한 코스</p>
+        <p id="room-confirm-course" class="text-sm font-extrabold text-forest-900 mt-0.5"></p>
+      </div>
+      <p class="text-xs text-slate-600">입장에 동의하면 로그인 후 이 코스의 회원 전용 실시간 채팅방에 참여합니다.</p>
+      <p id="room-config-warning" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2.5"></p>
+      <div class="flex gap-2">
+        <button onclick="closeAllModals()" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">취소</button>
+        <button id="btn-confirm-room-entry" onclick="confirmCourseRoomEntry()" class="flex-1 py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">동의하고 입장</button>
+      </div>
+    </div>
+
+    <!-- Email and Password Authentication Modal -->
+    <div id="modal-auth" onclick="event.stopPropagation()" class="app-modal hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 id="auth-title" class="font-extrabold text-slate-900 text-base">로그인</h3>
+        <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+      </div>
+      <p id="auth-context" class="text-xs text-slate-600"></p>
+      <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-2.5">
+        <div id="auth-name-wrap" class="hidden space-y-1">
+          <label for="auth-display-name" class="text-xs font-bold text-slate-700">닉네임</label>
+          <input id="auth-display-name" type="text" maxlength="30" autocomplete="nickname" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
+        </div>
+        <label class="block space-y-1">
+          <span class="text-xs font-bold text-slate-700">이메일</span>
+          <input id="auth-email" type="email" required autocomplete="email" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
+        </label>
+        <label class="block space-y-1">
+          <span class="text-xs font-bold text-slate-700">비밀번호 (8자 이상)</span>
+          <input id="auth-password" type="password" minlength="8" required autocomplete="current-password" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
+        </label>
+        <p id="auth-feedback" role="status" class="hidden text-xs rounded-xl p-2.5"></p>
+        <button id="btn-submit-auth" type="submit" class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">로그인</button>
+      </form>
+      <button id="btn-toggle-auth-mode" onclick="toggleAuthMode()" class="w-full text-xs text-forest-700 font-bold hover:underline">계정이 없으신가요? 회원가입</button>
+    </div>
+
     <!-- Demo Guide Modal -->
-    <div id="modal-guide" onclick="event.stopPropagation()" class="hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+    <div id="modal-guide" onclick="event.stopPropagation()" class="app-modal hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
       <div class="flex items-center justify-between">
         <h3 class="font-extrabold text-slate-900 text-base">해커톤 시연 & PRD 활용 가이드</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
@@ -642,7 +685,7 @@
     </div>
 
     <!-- SOS Modal -->
-    <div id="modal-sos" onclick="event.stopPropagation()" class="hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+    <div id="modal-sos" onclick="event.stopPropagation()" class="app-modal hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
       <div class="flex items-center justify-between">
         <h3 class="font-extrabold text-red-700 text-base">🚨 산행 비상 안내 & 국가지점번호</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
@@ -656,7 +699,7 @@
     </div>
 
     <!-- Trail Event Modal -->
-    <div id="modal-trail-event" onclick="event.stopPropagation()" class="hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+    <div id="modal-trail-event" onclick="event.stopPropagation()" class="app-modal hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
       <div class="flex items-center justify-between">
         <h3 class="font-extrabold text-slate-900 text-base">🏃 경남 트레일 대회 & 산책로 (확장)</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
@@ -676,7 +719,7 @@
     </div>
 
     <!-- Gear Rental Modal -->
-    <div id="modal-gear" onclick="event.stopPropagation()" class="hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
+    <div id="modal-gear" onclick="event.stopPropagation()" class="app-modal hidden bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3">
       <div class="flex items-center justify-between">
         <h3 class="font-extrabold text-slate-900 text-base">🎒 등산 장비 대여·공유 (후속 확장)</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
@@ -779,17 +822,35 @@
       }
     ];
 
+    const SUPABASE_URL = 'https://vfhjvelxirfgastdqohq.supabase.co';
+    const SUPABASE_PUBLIC_KEY = 'sb_publishable_n5qdZiWcLJ9oA6swElKrBg_venzzx-O';
+
     let selectedCourse = COURSES[0];
     let currentFilter = '전체';
-    let isJoinedCrew = false;
+    let hasSelectedCourse = false;
     let isGpsConsentOn = true;
-    let isWeakSignalChat = false;
+    let supabaseClient = null;
+    let currentUser = null;
+    let pendingRoomCourseId = null;
+    let activeRoomCourseId = null;
+    let chatSubscription = null;
+    let chatMessages = [];
+    let authMode = 'signin';
 
-    let chatMessages = [
-      { sender: '다현 (크루장)', text: '이번 주 토요일 오전 9시 입구 매표소 앞에서 만나요!', time: '오전 8:42', isMe: false, queued: false },
-      { sender: '민규', text: '물 500ml랑 바람막이 챙겼습니다. 초보라 잘 부탁드려요!', time: '오전 8:45', isMe: false, queued: false },
-      { sender: '승보 (나)', text: '코스 데이터 미리 저장 완료했어요. 안전하게 다녀옵시다!', time: '오전 8:47', isMe: true, queued: false }
-    ];
+    function isSupabaseConfigured() {
+      return window.supabase
+        && SUPABASE_URL.startsWith('https://')
+        && !SUPABASE_URL.includes('YOUR_PROJECT_ID')
+        && SUPABASE_PUBLIC_KEY
+        && !SUPABASE_PUBLIC_KEY.includes('YOUR_SUPABASE_');
+    }
+
+    function showChatStatus(message, type = 'error') {
+      const status = document.getElementById('chat-status');
+      status.textContent = message;
+      status.className = `text-[11px] rounded-xl px-3 py-2 ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-forest-50 text-forest-800 border border-forest-200'}`;
+      status.classList.remove('hidden');
+    }
 
     function showToast(msg) {
       const el = document.getElementById('toast');
@@ -884,9 +945,13 @@
       const found = COURSES.find(c => c.id === id);
       if (!found) return;
       selectedCourse = found;
-      isJoinedCrew = false;
+      hasSelectedCourse = true;
+      activeRoomCourseId = null;
+      chatMessages = [];
+      void stopRoomSubscription();
       updateCourseBoundUI();
       goToStep(2);
+      requestCourseRoomEntry();
     }
 
     function updateCourseBoundUI() {
@@ -907,21 +972,54 @@
 
       // Step 3 UI
       document.getElementById('chat-room-title').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 2030 크루방`;
-      document.getElementById('crew-count').textContent = `${selectedCourse.crewCount + (isJoinedCrew ? 1 : 0)}명`;
-      const joinBtn = document.getElementById('btn-join-crew');
-      if (isJoinedCrew) {
-        joinBtn.textContent = '✓ 합류 완료';
-        joinBtn.className = 'px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold transition';
-      } else {
-        joinBtn.textContent = '크루 합류하기';
-        joinBtn.className = 'px-3 py-1.5 rounded-xl bg-forest-700 text-white text-xs font-bold shadow-sm transition';
-      }
 
       // Step 4 UI
       document.getElementById('map-course-name').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 실시간 안전 지도`;
     }
 
+    function requestCourseRoomEntry() {
+      if (!hasSelectedCourse) {
+        showToast('먼저 참여할 코스를 선택해 주세요.');
+        return;
+      }
+
+      document.getElementById('room-confirm-course').textContent = selectedCourse.title;
+      const warning = document.getElementById('room-config-warning');
+      const confirmButton = document.getElementById('btn-confirm-room-entry');
+      const configured = isSupabaseConfigured();
+      warning.textContent = '실시간 채팅을 사용하려면 Supabase URL과 공개 키 설정이 필요합니다.';
+      warning.classList.toggle('hidden', configured);
+      confirmButton.disabled = !configured;
+      confirmButton.classList.toggle('opacity-50', !configured);
+      confirmButton.classList.toggle('cursor-not-allowed', !configured);
+      openModal('modal-room-confirm');
+    }
+
+    async function confirmCourseRoomEntry() {
+      if (!isSupabaseConfigured()) {
+        showToast('실시간 채팅 서버 설정이 필요합니다.');
+        return;
+      }
+
+      if (!currentUser) {
+        pendingRoomCourseId = selectedCourse.id;
+        localStorage.setItem('pending-course-room-id', pendingRoomCourseId);
+        setAuthMode('signin');
+        document.getElementById('auth-context').textContent = `${selectedCourse.title} 소통방에 입장하려면 로그인하거나 회원가입해 주세요.`;
+        closeAllModals();
+        openModal('modal-auth');
+        return;
+      }
+
+      await enterCourseRoom(selectedCourse.id);
+    }
+
     function goToStep(step) {
+      if (step === 3 && (!currentUser || activeRoomCourseId !== selectedCourse.id)) {
+        showToast('코스를 선택하고 소통방 입장에 동의해 주세요.');
+        return;
+      }
+
       [1, 2, 3, 4].forEach(n => {
         const sec = document.getElementById(`screen-${n}`);
         const pill = document.getElementById(`step-pill-${n}`);
@@ -938,22 +1036,6 @@
       });
       document.getElementById('screen-body').scrollTop = 0;
       if (step === 3) renderChat();
-    }
-
-    function toggleJoinCrew() {
-      isJoinedCrew = !isJoinedCrew;
-      updateCourseBoundUI();
-      if (isJoinedCrew) {
-        chatMessages.push({
-          sender: '시스템',
-          text: '승보님이 크루에 합류했습니다. 산행 중 안전 수칙을 확인해 주세요!',
-          time: '방금',
-          isMe: false,
-          queued: false
-        });
-        renderChat();
-        showToast('크루 합류가 완료되었습니다!');
-      }
     }
 
     function toggleGpsConsent() {
@@ -974,89 +1056,298 @@
       }
     }
 
-    function toggleWeakSignalChat() {
-      isWeakSignalChat = !isWeakSignalChat;
-      const btn = document.getElementById('btn-sim-weak-signal');
-      if (isWeakSignalChat) {
-        btn.textContent = '통신 약함 (큐 대기)';
-        btn.className = 'text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800';
-        showToast('전파 약함 모드: 메시지가 로컬 큐에 임시 저장됩니다.');
-      } else {
-        btn.textContent = '정상 통신 중';
-        btn.className = 'text-[11px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700';
-        // Flush queued messages
-        let flushed = false;
-        chatMessages.forEach(m => {
-          if (m.queued) {
-            m.queued = false;
-            flushed = true;
-          }
-        });
-        renderChat();
-        if (flushed) showToast('연결 복구! 대기 중이던 메시지가 자동 전송되었습니다.');
-      }
-    }
-
     function renderChat() {
       const box = document.getElementById('chat-messages');
-      box.innerHTML = chatMessages.map(m => {
-        if (m.sender === '시스템') {
-          return `<div class="text-center"><span class="inline-block text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">${escapeHTML(m.text)}</span></div>`;
-        }
-        if (m.isMe) {
-          return `
-            <div class="flex flex-col items-end">
-              <div class="bg-forest-700 text-white text-xs px-3 py-2 rounded-2xl rounded-tr-sm max-w-[82%] shadow-xs">
-                ${escapeHTML(m.text)}
-              </div>
-              <span class="text-[10px] mt-0.5 ${m.queued ? 'text-amber-600 font-bold' : 'text-slate-400'}">
-                ${m.queued ? '⏳ 전파 약함 · 로컬 임시 저장됨' : escapeHTML(m.time)}
-              </span>
-            </div>
-          `;
-        }
+      if (chatMessages.length === 0) {
+        box.innerHTML = '<p class="text-center text-xs text-slate-400 py-8">첫 메시지를 남겨 보세요.</p>';
+        return;
+      }
+
+      box.innerHTML = chatMessages.map(message => {
+        const isMe = message.user_id === currentUser?.id;
+        const time = new Date(message.created_at).toLocaleTimeString('ko-KR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
         return `
-          <div class="flex flex-col items-start">
-            <span class="text-[10px] font-bold text-slate-600 mb-0.5">${escapeHTML(m.sender)}</span>
-            <div class="bg-slate-100 text-slate-800 text-xs px-3 py-2 rounded-2xl rounded-tl-sm max-w-[82%]">
-              ${escapeHTML(m.text)}
+          <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+            ${isMe ? '' : `<span class="text-[10px] font-bold text-slate-600 mb-0.5">${escapeHTML(message.display_name)}</span>`}
+            <div class="${isMe ? 'bg-forest-700 text-white rounded-tr-sm' : 'bg-slate-100 text-slate-800 rounded-tl-sm'} text-xs px-3 py-2 rounded-2xl max-w-[82%] shadow-xs break-words">
+              ${escapeHTML(message.body)}
             </div>
-            <span class="text-[10px] text-slate-400 mt-0.5">${escapeHTML(m.time)}</span>
+            <span class="text-[10px] text-slate-400 mt-0.5">${escapeHTML(time)}</span>
           </div>
         `;
       }).join('');
       box.scrollTop = box.scrollHeight;
     }
 
-    function handleSendChat(e) {
+    function appendChatMessage(message) {
+      if (chatMessages.some(existing => existing.id === message.id)) return;
+      chatMessages.push(message);
+      chatMessages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      renderChat();
+    }
+
+    async function handleSendChat(e) {
       e.preventDefault();
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
       if (!text) return;
-      chatMessages.push({
-        sender: '승보 (나)',
-        text,
-        time: '방금',
-        isMe: true,
-        queued: isWeakSignalChat
-      });
-      input.value = '';
-      renderChat();
-      if (isWeakSignalChat) {
-        showToast('통신 취약 구간: 로컬 큐에 저장 후 연결 시 자동 전송됩니다.');
+      if (await sendChatMessage(text)) input.value = '';
+    }
+
+    async function sendQuickStatus(text) {
+      await sendChatMessage(text);
+    }
+
+    async function sendChatMessage(text) {
+      if (!currentUser || !activeRoomCourseId || !supabaseClient) {
+        showToast('코스 소통방에 입장한 뒤 메시지를 보낼 수 있습니다.');
+        return;
+      }
+      if (text.length > 1000) {
+        showToast('메시지는 1,000자 이내로 입력해 주세요.');
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from('course_room_messages')
+        .insert({
+          course_id: activeRoomCourseId,
+          user_id: currentUser.id,
+          display_name: getDisplayName(currentUser),
+          body: text
+        })
+        .select('id, course_id, user_id, display_name, body, created_at')
+        .single();
+
+      if (error) {
+        showChatStatus(`메시지를 보내지 못했습니다: ${error.message}`);
+        return false;
+      }
+
+      appendChatMessage(data);
+      return true;
+    }
+
+    function getDisplayName(user) {
+      const name = user.user_metadata?.display_name || user.email?.split('@')[0] || '회원';
+      return name.trim().slice(0, 30) || '회원';
+    }
+
+    function updateAccountButton() {
+      const button = document.getElementById('btn-account');
+      if (!button) return;
+      button.textContent = currentUser ? '로그아웃' : '로그인 / 가입';
+      button.title = currentUser?.email || '회원 로그인';
+    }
+
+    function setAuthFeedback(message, type = 'error') {
+      const feedback = document.getElementById('auth-feedback');
+      feedback.textContent = message;
+      feedback.className = `text-xs rounded-xl p-2.5 ${type === 'error' ? 'bg-red-50 text-red-700' : 'bg-forest-50 text-forest-800'}`;
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      const isSignup = mode === 'signup';
+      document.getElementById('auth-title').textContent = isSignup ? '회원가입' : '로그인';
+      document.getElementById('auth-name-wrap').classList.toggle('hidden', !isSignup);
+      document.getElementById('auth-display-name').required = isSignup;
+      document.getElementById('auth-password').autocomplete = isSignup ? 'new-password' : 'current-password';
+      document.getElementById('btn-submit-auth').textContent = isSignup ? '회원가입' : '로그인';
+      document.getElementById('btn-toggle-auth-mode').textContent = isSignup
+        ? '이미 계정이 있으신가요? 로그인'
+        : '계정이 없으신가요? 회원가입';
+      document.getElementById('auth-feedback').classList.add('hidden');
+    }
+
+    function toggleAuthMode() {
+      setAuthMode(authMode === 'signin' ? 'signup' : 'signin');
+    }
+
+    async function handleAccountAction() {
+      if (!isSupabaseConfigured() || !supabaseClient) {
+        showToast('로그인 서버 설정이 필요합니다.');
+        return;
+      }
+      if (currentUser) {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+          showToast(`로그아웃하지 못했습니다: ${error.message}`);
+          return;
+        }
+        return;
+      }
+
+      pendingRoomCourseId = null;
+      document.getElementById('auth-context').textContent = '로그인하면 코스별 회원 전용 소통방을 이용할 수 있습니다.';
+      setAuthMode('signin');
+      openModal('modal-auth');
+    }
+
+    async function submitAuth(event) {
+      event.preventDefault();
+      if (!supabaseClient) {
+        setAuthFeedback('Supabase 설정을 먼저 완료해 주세요.');
+        return;
+      }
+
+      const button = document.getElementById('btn-submit-auth');
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const displayName = document.getElementById('auth-display-name').value.trim();
+      button.disabled = true;
+      button.classList.add('opacity-50');
+      document.getElementById('auth-feedback').classList.add('hidden');
+
+      try {
+        let result;
+        if (authMode === 'signup') {
+          result = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: { data: { display_name: displayName } }
+          });
+        } else {
+          result = await supabaseClient.auth.signInWithPassword({ email, password });
+        }
+        if (result.error) throw result.error;
+
+        if (authMode === 'signup' && !result.data.session) {
+          currentUser = null;
+          updateAccountButton();
+          if (pendingRoomCourseId) {
+            localStorage.setItem('pending-course-room-id', pendingRoomCourseId);
+          }
+          setAuthFeedback('인증 메일을 보냈습니다. 이메일 인증 후 로그인해 주세요.', 'success');
+          return;
+        }
+
+        currentUser = result.data.user;
+        updateAccountButton();
+        closeAllModals();
+        const courseId = pendingRoomCourseId || localStorage.getItem('pending-course-room-id');
+        pendingRoomCourseId = null;
+        if (courseId) {
+          localStorage.removeItem('pending-course-room-id');
+          await enterCourseRoom(courseId);
+        } else {
+          showToast('로그인되었습니다.');
+        }
+      } catch (error) {
+        setAuthFeedback(`로그인에 실패했습니다: ${error.message}`);
+      } finally {
+        button.disabled = false;
+        button.classList.remove('opacity-50');
       }
     }
 
-    function sendQuickStatus(text) {
-      chatMessages.push({
-        sender: '승보 (나)',
-        text,
-        time: '방금',
-        isMe: true,
-        queued: isWeakSignalChat
-      });
+    async function enterCourseRoom(courseId) {
+      const course = COURSES.find(item => item.id === courseId);
+      if (!course || !currentUser || !supabaseClient) {
+        showToast('로그인과 코스 선택을 확인해 주세요.');
+        return;
+      }
+
+      selectedCourse = course;
+      hasSelectedCourse = true;
+      updateCourseBoundUI();
+      showToast('코스 소통방 입장을 확인하는 중입니다.');
+
+      try {
+        const { data: membership, error: lookupError } = await supabaseClient
+          .from('course_room_members')
+          .select('user_id')
+          .eq('course_id', courseId)
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+        if (lookupError) throw lookupError;
+
+        if (!membership) {
+          const { error: joinError } = await supabaseClient
+            .from('course_room_members')
+            .insert({
+              course_id: courseId,
+              user_id: currentUser.id,
+              display_name: getDisplayName(currentUser)
+            });
+          if (joinError) throw joinError;
+        }
+
+        activeRoomCourseId = courseId;
+        closeAllModals();
+        goToStep(3);
+        await stopRoomSubscription();
+        await loadRoomMessages(courseId);
+        subscribeToRoom(courseId);
+        showChatStatus(`${course.title} 실시간 소통방에 입장했습니다.`, 'success');
+      } catch (error) {
+        activeRoomCourseId = null;
+        goToStep(2);
+        showToast(`소통방에 입장하지 못했습니다: ${error.message}`);
+      }
+    }
+
+    async function loadRoomMessages(courseId) {
+      chatMessages = [];
       renderChat();
-      showToast(isWeakSignalChat ? '경량 상태 패킷 임시 저장됨' : '빠른 상태가 크루방에 공유되었습니다.');
+      const { data, error } = await supabaseClient
+        .from('course_room_messages')
+        .select('id, course_id, user_id, display_name, body, created_at')
+        .eq('course_id', courseId)
+        .order('created_at', { ascending: true })
+        .limit(100);
+      if (error) throw error;
+      chatMessages = data || [];
+      renderChat();
+    }
+
+    function subscribeToRoom(courseId) {
+      chatSubscription = supabaseClient
+        .channel(`course-room-${courseId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'course_room_messages',
+          filter: `course_id=eq.${courseId}`
+        }, payload => appendChatMessage(payload.new))
+        .subscribe(status => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            showChatStatus('실시간 연결이 끊겼습니다. 네트워크와 Supabase 설정을 확인해 주세요.');
+          }
+        });
+    }
+
+    async function stopRoomSubscription() {
+      if (!chatSubscription || !supabaseClient) return;
+      const channel = chatSubscription;
+      chatSubscription = null;
+      await supabaseClient.removeChannel(channel);
+    }
+
+    async function leaveCourseRoom() {
+      if (!currentUser || !activeRoomCourseId || !supabaseClient) {
+        goToStep(2);
+        return;
+      }
+
+      const courseId = activeRoomCourseId;
+      const { error } = await supabaseClient
+        .from('course_room_members')
+        .delete()
+        .eq('course_id', courseId)
+        .eq('user_id', currentUser.id);
+      if (error) {
+        showChatStatus(`방에서 나가지 못했습니다: ${error.message}`);
+        return;
+      }
+
+      activeRoomCourseId = null;
+      await stopRoomSubscription();
+      goToStep(2);
+      showToast('소통방에서 나왔습니다. 다시 입장하려면 동의가 필요합니다.');
     }
 
     function updateAltitude(val) {
@@ -1089,8 +1380,8 @@
 
     function openModal(id) {
       document.getElementById('modal-backdrop').classList.remove('hidden');
-      ['modal-guide', 'modal-sos', 'modal-trail-event', 'modal-gear'].forEach(m => {
-        document.getElementById(m).classList.toggle('hidden', m !== id);
+      document.querySelectorAll('.app-modal').forEach(modal => {
+        modal.classList.toggle('hidden', modal.id !== id);
       });
     }
 
@@ -1098,11 +1389,46 @@
       document.getElementById('modal-backdrop').classList.add('hidden');
     }
 
+    async function initializeSupabase() {
+      if (!isSupabaseConfigured()) {
+        updateAccountButton();
+        return;
+      }
+
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error) {
+        showToast(`로그인 상태를 확인하지 못했습니다: ${error.message}`);
+        return;
+      }
+
+      currentUser = data.session?.user || null;
+      updateAccountButton();
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        currentUser = session?.user || null;
+        updateAccountButton();
+        if (event === 'SIGNED_OUT') {
+          activeRoomCourseId = null;
+          void stopRoomSubscription();
+          if (!document.getElementById('screen-3').classList.contains('hidden')) {
+            goToStep(2);
+          }
+        }
+      });
+
+      const pendingCourseId = localStorage.getItem('pending-course-room-id');
+      if (currentUser && pendingCourseId) {
+        localStorage.removeItem('pending-course-room-id');
+        await enterCourseRoom(pendingCourseId);
+      }
+    }
+
     // Initialize on load
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
       renderCourses();
       updateCourseBoundUI();
       renderChat();
+      await initializeSupabase();
     });
   </script>
 </body>

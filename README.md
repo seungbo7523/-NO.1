@@ -20,6 +20,13 @@ AI 산·코스 추천, 현장 소통, 장비 대여/거래, 크루 GPS 위치 �
 
 ## 인터랙티브 프로토타입
 
-`index.html`은 이슈 #2에 첨부된 TrailMate 경남 시연용 프로토타입입니다. 코스 추천, 코스 상세, 크루 소통, 안전 지도 흐름을 브라우저에서 체험할 수 있습니다. 채팅·GPS·고도 안내와 지도 데이터는 시연을 위한 로컬 시뮬레이션이며, 실제 위치 공유, 공공데이터 연동, 메시지 전송 또는 긴급 신고 기능은 제공하지 않습니다.
+`index.html`은 이슈 #2에 첨부된 TrailMate 경남 시연용 프로토타입입니다. 코스를 선택하면 해당 코스 소통방 입장 동의를 확인하고, 이메일·비밀번호 로그인 후 회원으로 참여합니다. Supabase를 설정하면 코스별 채팅 메시지가 저장되고 실시간으로 공유됩니다. GPS·고도 안내와 지도 데이터는 시연용 로컬 시뮬레이션이며 실제 위치 공유, 공공데이터 연동 또는 긴급 신고 기능은 제공하지 않습니다.
+
+### 실시간 소통방 설정
+
+1. Supabase 프로젝트를 만들고 SQL Editor에서 [`supabase/schema.sql`](supabase/schema.sql)을 실행합니다. 이 스키마는 회원만 해당 코스방의 메시지를 읽고 보낼 수 있도록 RLS 정책을 설정합니다.
+2. Supabase Authentication에서 이메일 로그인을 활성화하고, URL 설정의 Site URL 및 Redirect URLs에 `https://seungbo7523.github.io/-NO.1/`을 추가합니다.
+3. 현재 Supabase Project URL과 publishable key는 `index.html`의 `SUPABASE_URL`, `SUPABASE_PUBLIC_KEY`에 설정되어 있습니다. 다른 프로젝트를 연결할 때만 값을 바꾸고, `service_role` 또는 secret key는 브라우저 코드에 넣지 마세요.
+4. 변경사항을 `main`에 반영하면 GitHub Pages가 다시 배포됩니다. Supabase 설정 전에는 입장 확인창에서 서버 미설정 안내가 표시됩니다.
 
 `main` 브랜치에 반영되면 `.github/workflows/deploy-pages.yml`이 GitHub Pages 배포를 수행하고 Pages 활성화를 시도합니다. 저장소 정책이나 권한으로 자동 활성화되지 않으면 GitHub 저장소 설정에서 Pages 배포 원본을 **GitHub Actions**로 지정하세요.
