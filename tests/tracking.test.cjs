@@ -84,7 +84,12 @@ function setup() {
   vm.createContext(context);
   vm.runInContext(`${script}
     globalThis.trackingTest = {
-      setup(client) { supabaseClient = client; currentUser = { id: 'user_1' }; activeRoomCourseId = 'cheonjusan'; },
+      setup(client) {
+        supabaseClient = client;
+        dataService = window.TrailMateData.create(client);
+        currentUser = { id: 'user_1' };
+        activeRoomCourseId = 'cheonjusan';
+      },
       setRoom(id) { activeRoomCourseId = id; },
       setConsent(value) { toggleGpsConsent(value); },
       enterCourseRoom, beginRoomTracking, refreshTracking, finishTracking, saveObservedAltitude,

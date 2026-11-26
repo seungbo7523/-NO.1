@@ -53,11 +53,14 @@ function setup() {
       },
       setChat(client, user, roomId) {
         supabaseClient = client;
+        dataService = window.TrailMateData.create(client);
         currentUser = user;
         activeRoomCourseId = roomId;
       },
       sendChatMessage,
-      sendQuickStatus
+      sendQuickStatus,
+      subscribeToRoom,
+      retryRoomConnection
     };`, context);
   return { context, element, filterButtons };
 }
@@ -138,4 +141,50 @@ test('quick status buttons send a message to the active course room', async () =
   assert.equal(inserted.course_id, 'cheonjusan');
   assert.equal(inserted.body, '정상 도착했어요!');
   assert.match(app.element('chat-messages').innerHTML, /정상 도착했어요!/);
+});
+
+test('realtime errors expose retry and reload messages before resubscribing', async () => {
+  const app = setup();
+  const statusCallbacks = [];
+  let removeCount = 0;
+  const client = {
+    from() {
+      return {
+        select() { return this; },
+        eq() { return this; },
+        order() { return this; },
+        async limit() {
+          return {
+            data: [{ id: 1, user_id: 'user_2', display_name: 'hiker2', body: '다시 연결됨', created_at: new Date().toISOString() }],
+            error: null
+          };
+        }
+      };
+    },
+    channel() {
+      const channel = {
+        on() { return this; },
+        subscribe(callback) {
+          statusCallbacks.push(callback);
+          return this;
+        }
+      };
+      return channel;
+    },
+    async removeChannel() {
+      removeCount++;
+      return 'ok';
+    }
+  };
+  app.context.flowTest.setChat(client, { id: 'user_1', username: 'hiker' }, 'cheonjusan');
+  app.context.flowTest.subscribeToRoom('cheonjusan');
+  statusCallbacks[0]('CHANNEL_ERROR');
+
+  assert.equal(app.element('retry-chat-connection').classList.contains('hidden'), false);
+  await app.context.flowTest.retryRoomConnection();
+
+  assert.equal(removeCount, 1);
+  assert.equal(statusCallbacks.length, 2);
+  assert.match(app.element('chat-messages').innerHTML, /다시 연결됨/);
+  assert.equal(app.element('retry-chat-connection').classList.contains('hidden'), true);
 });

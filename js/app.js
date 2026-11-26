@@ -8,6 +8,7 @@
     let hasSelectedCourse = false;
     let isGpsConsentOn = false;
     let supabaseClient = null;
+    let dataService = null;
     let clerkReady = false;
     let currentUser = null;
     let pendingRoomCourseId = null;
@@ -26,18 +27,20 @@
     let observedAltitude = null;
 
     function isSupabaseConfigured() {
-      return window.supabase && clerkReady && supabaseClient
+      return window.supabase && clerkReady && supabaseClient && dataService
         && SUPABASE_URL.startsWith('https://')
         && !SUPABASE_URL.includes('YOUR_PROJECT_ID')
         && SUPABASE_PUBLIC_KEY
         && !SUPABASE_PUBLIC_KEY.includes('YOUR_SUPABASE_');
     }
 
-    function showChatStatus(message, type = 'error') {
+    function showChatStatus(message, type = 'error', retryable = false) {
       const status = document.getElementById('chat-status');
       status.textContent = message;
       status.className = `text-[11px] rounded-xl px-3 py-2 ${type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-forest-50 text-forest-800 border border-forest-200'}`;
       status.classList.remove('hidden');
+      const retryButton = document.getElementById('retry-chat-connection');
+      if (retryButton) retryButton.classList.toggle('hidden', !retryable || !activeRoomCourseId);
     }
 
     function showToast(msg) {
@@ -134,7 +137,9 @@
       hasSelectedCourse = true;
       activeRoomCourseId = null;
       chatMessages = [];
-      void stopRoomSubscription();
+      void stopRoomSubscription().catch(error => {
+        showChatStatus(`실시간 연결을 종료하지 못했습니다: ${error.message}`);
+      });
       updateCourseBoundUI();
       goToStep(2);
       requestCourseRoomEntry();
@@ -286,7 +291,7 @@
     }
 
     async function sendChatMessage(text) {
-      if (!currentUser || !activeRoomCourseId || !supabaseClient) {
+      if (!currentUser || !activeRoomCourseId || !dataService) {
         showToast('코스 소통방에 입장한 뒤 메시지를 보낼 수 있습니다.');
         return false;
       }
@@ -295,24 +300,19 @@
         return false;
       }
 
-      const { data, error } = await supabaseClient
-        .from('course_room_messages')
-        .insert({
+      try {
+        const data = await dataService.sendRoomMessage({
           course_id: activeRoomCourseId,
           user_id: currentUser.id,
           display_name: getDisplayName(currentUser),
           body: text
         })
-        .select('id, course_id, user_id, display_name, body, created_at')
-        .single();
-
-      if (error) {
-        showChatStatus(`메시지를 보내지 못했습니다: ${error.message}`);
+        appendChatMessage(data);
+        return true;
+      } catch (error) {
+        showChatStatus(`메시지를 보내지 못했습니다: ${error.message}`, 'error', true);
         return false;
       }
-
-      appendChatMessage(data);
-      return true;
     }
 
     function getDisplayName(user) {
@@ -442,16 +442,13 @@
     }
 
     async function saveObservedAltitude() {
-      if (altitudeSavePromise || !activeTracking || observedAltitude === null || trackingBusy) return;
+      if (altitudeSavePromise || !activeTracking || !dataService || observedAltitude === null || trackingBusy) return;
       const sessionId = activeTracking.id;
       const userId = currentUser?.id;
       const altitude = observedAltitude;
-      altitudeSavePromise = supabaseClient.from('tracking_sessions')
-        .update({ max_altitude_m: altitude }).eq('id', sessionId).eq('user_id', userId).is('ended_at', null)
-        .select('max_altitude_m').single();
+      altitudeSavePromise = dataService.updateTrackingAltitude(sessionId, userId, altitude);
       try {
-        const { data, error } = await altitudeSavePromise;
-        if (error) throw error;
+        const data = await altitudeSavePromise;
         if (activeTracking?.id !== sessionId || currentUser?.id !== userId) return;
         activeTracking.max_altitude_m = data.max_altitude_m;
         if (observedAltitude > data.max_altitude_m && !altitudeTimer) {
@@ -486,16 +483,14 @@
     }
 
     async function refreshTracking() {
-      if (trackingBusy || !currentUser || !supabaseClient) return false;
+      if (trackingBusy || !currentUser || !dataService) return false;
       const userId = currentUser?.id;
       const version = ++profileLoadVersion;
       trackingReady = false;
       renderActiveTracking();
       setTrackingStatus('기록을 불러오는 중입니다.');
       try {
-        const { data, error } = await supabaseClient.from('tracking_sessions')
-          .select('id, course_id, started_at, max_altitude_m').eq('user_id', userId).is('ended_at', null).maybeSingle();
-        if (error) throw error;
+        const data = await dataService.getActiveTracking(userId);
         if (currentUser?.id !== userId || version !== profileLoadVersion) return false;
         if (activeTracking?.id !== data?.id) {
           stopAltitudeWatch();
@@ -528,12 +523,7 @@
       summary.textContent = '기록을 불러오는 중입니다.';
       history.textContent = '';
       try {
-        const { data, error } = await supabaseClient.from('tracking_sessions')
-          .select('id, course_id, started_at, ended_at, max_altitude_m')
-          .eq('user_id', userId).not('ended_at', 'is', null)
-          .gte('started_at', start.toISOString()).lt('started_at', end.toISOString())
-          .order('started_at', { ascending: false });
-        if (error) throw error;
+        const data = await dataService.listTrackingHistory(userId, start.toISOString(), end.toISOString());
         if (currentUser?.id !== userId || document.getElementById('tracking-month').value !== month) return;
         summary.textContent = `${monthNumber}월 총 ${data.length}회`;
         history.innerHTML = data.length ? data.map(row => {
@@ -596,10 +586,13 @@
         if (currentUser?.id !== userId || activeRoomCourseId !== courseId) return;
         const { latitude, longitude, altitude } = position.coords;
         const maxAltitude = typeof altitude === 'number' && Number.isFinite(altitude) ? altitude : null;
-        const { data, error } = await supabaseClient.from('tracking_sessions')
-          .insert({ user_id: userId, course_id: courseId, start_lat: latitude, start_lng: longitude, max_altitude_m: maxAltitude })
-          .select('id, course_id, started_at, max_altitude_m').single();
-        if (error) throw error;
+        const data = await dataService.startTracking({
+          user_id: userId,
+          course_id: courseId,
+          start_lat: latitude,
+          start_lng: longitude,
+          max_altitude_m: maxAltitude
+        });
         if (currentUser?.id !== userId) return;
         activeTracking = data;
         observedAltitude = data.max_altitude_m;
@@ -627,16 +620,12 @@
         if (currentUser?.id !== userId || activeTracking?.id !== session.id) return;
         if (position) rememberAltitude(position);
         stopAltitudeWatch();
-        const { data, error } = await supabaseClient.from('tracking_sessions')
-          .update({
+        const data = await dataService.finishTracking(session.id, userId, {
             ended_at: new Date().toISOString(),
             end_lat: position?.coords.latitude ?? null,
             end_lng: position?.coords.longitude ?? null,
             max_altitude_m: observedAltitude
           })
-          .eq('id', session.id).eq('user_id', userId).is('ended_at', null)
-          .select('id').single();
-        if (error) throw error;
         if (!data) throw new Error('진행 중인 산행을 찾을 수 없습니다.');
         if (currentUser?.id !== userId) return;
         activeTracking = null;
@@ -762,7 +751,7 @@
 
     async function enterCourseRoom(courseId) {
       const course = COURSES.find(item => item.id === courseId);
-      if (!course || !currentUser || !supabaseClient) {
+      if (!course || !currentUser || !dataService) {
         showToast('로그인과 코스 선택을 확인해 주세요.');
         return;
       }
@@ -773,23 +762,10 @@
       showToast('코스 소통방 입장을 확인하는 중입니다.');
 
       try {
-        const { data: membership, error: lookupError } = await supabaseClient
-          .from('course_room_members')
-          .select('user_id')
-          .eq('course_id', courseId)
-          .eq('user_id', currentUser.id)
-          .maybeSingle();
-        if (lookupError) throw lookupError;
+        const membership = await dataService.getRoomMembership(courseId, currentUser.id);
 
         if (!membership) {
-          const { error: joinError } = await supabaseClient
-            .from('course_room_members')
-            .insert({
-              course_id: courseId,
-              user_id: currentUser.id,
-              display_name: getDisplayName(currentUser)
-            });
-          if (joinError) throw joinError;
+          await dataService.joinRoom(courseId, currentUser.id, getDisplayName(currentUser));
         }
 
         activeRoomCourseId = courseId;
@@ -810,59 +786,73 @@
     async function loadRoomMessages(courseId) {
       chatMessages = [];
       renderChat();
-      const { data, error } = await supabaseClient
-        .from('course_room_messages')
-        .select('id, course_id, user_id, display_name, body, created_at')
-        .eq('course_id', courseId)
-        .order('created_at', { ascending: true })
-        .limit(100);
-      if (error) throw error;
-      chatMessages = data || [];
+      chatMessages = await dataService.listRoomMessages(courseId);
       renderChat();
     }
 
     function subscribeToRoom(courseId) {
-      chatSubscription = supabaseClient
-        .channel(`course-room-${courseId}`)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'course_room_messages',
-          filter: `course_id=eq.${courseId}`
-        }, payload => appendChatMessage(payload.new))
-        .subscribe(status => {
-          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            showChatStatus('실시간 연결이 끊겼습니다. 네트워크와 Supabase 설정을 확인해 주세요.');
-          }
-        });
+      let channel;
+      channel = dataService.subscribeToRoomMessages(courseId, appendChatMessage, status => {
+        if (chatSubscription && chatSubscription !== channel) return;
+        if (status === 'SUBSCRIBED') {
+          showChatStatus('실시간 소통방에 연결되었습니다.', 'success');
+        } else if (['CHANNEL_ERROR', 'TIMED_OUT', 'CLOSED'].includes(status)) {
+          showChatStatus('실시간 연결이 끊겼습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.', 'error', true);
+        }
+      });
+      chatSubscription = channel;
     }
 
     async function stopRoomSubscription() {
-      if (!chatSubscription || !supabaseClient) return;
+      if (!chatSubscription || !dataService) return;
       const channel = chatSubscription;
-      chatSubscription = null;
-      await supabaseClient.removeChannel(channel);
+      await dataService.removeRoomChannel(channel);
+      if (chatSubscription === channel) chatSubscription = null;
+    }
+
+    async function retryRoomConnection() {
+      const courseId = activeRoomCourseId;
+      if (!courseId || !currentUser || !dataService) {
+        showChatStatus('코스 소통방에 다시 입장한 뒤 연결을 시도해 주세요.');
+        return;
+      }
+
+      const button = document.getElementById('retry-chat-connection');
+      button.disabled = true;
+      button.textContent = '연결 중...';
+      try {
+        await stopRoomSubscription();
+        await loadRoomMessages(courseId);
+        subscribeToRoom(courseId);
+        showChatStatus('이전 메시지를 불러왔습니다. 실시간 연결을 확인하고 있습니다.', 'success');
+      } catch (error) {
+        showChatStatus(`실시간 연결을 복구하지 못했습니다: ${error.message}`, 'error', true);
+      } finally {
+        button.disabled = false;
+        button.textContent = '실시간 연결 다시 시도';
+      }
     }
 
     async function leaveCourseRoom() {
-      if (!currentUser || !activeRoomCourseId || !supabaseClient) {
+      if (!currentUser || !activeRoomCourseId || !dataService) {
         goToStep(2);
         return;
       }
 
       const courseId = activeRoomCourseId;
-      const { error } = await supabaseClient
-        .from('course_room_members')
-        .delete()
-        .eq('course_id', courseId)
-        .eq('user_id', currentUser.id);
-      if (error) {
-        showChatStatus(`방에서 나가지 못했습니다: ${error.message}`);
+      try {
+        await dataService.leaveRoom(courseId, currentUser.id);
+      } catch (error) {
+        showChatStatus(`방에서 나가지 못했습니다: ${error.message}`, 'error', true);
         return;
       }
 
       activeRoomCourseId = null;
-      await stopRoomSubscription();
+      try {
+        await stopRoomSubscription();
+      } catch (error) {
+        showChatStatus(`실시간 연결을 종료하지 못했습니다: ${error.message}`);
+      }
       goToStep(2);
       showToast('소통방에서 나왔습니다. 다시 입장하려면 동의가 필요합니다.');
     }
@@ -885,6 +875,7 @@
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY, {
           accessToken: async () => await window.Clerk.session?.getToken() ?? null
         });
+        dataService = window.TrailMateData.create(supabaseClient);
         clerkReady = true;
         currentUser = window.Clerk.user;
         updateAccountButton();
@@ -904,7 +895,9 @@
           if (user && previousUserId !== user.id) void refreshTracking();
           if (!user && activeRoomCourseId) {
             activeRoomCourseId = null;
-            void stopRoomSubscription();
+            void stopRoomSubscription().catch(error => {
+              showChatStatus(`실시간 연결을 종료하지 못했습니다: ${error.message}`);
+            });
             if (!document.getElementById('screen-3').classList.contains('hidden')) goToStep(2);
           }
         });

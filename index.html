@@ -320,6 +320,7 @@
             </div>
 
             <p id="chat-status" role="status" class="hidden text-[11px] rounded-xl px-3 py-2"></p>
+            <button id="retry-chat-connection" onclick="retryRoomConnection()" class="hidden w-full rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900">실시간 연결 다시 시도</button>
             <div class="bg-white rounded-2xl p-3 border border-slate-200 space-y-2">
               <p id="chat-tracking-active" class="text-xs font-bold text-slate-700">트래킹 기록 확인 중</p>
               <p id="chat-tracking-status" role="status" class="hidden text-xs"></p>
@@ -394,6 +395,9 @@
               </div>
               <p class="rounded-lg bg-amber-50 px-2.5 py-2 text-[10px] font-semibold leading-relaxed text-amber-900">
                 시연용 가상 안내도입니다. 경로·현재 위치·시설·사고 구간은 실제 데이터가 아닙니다.
+              </p>
+              <p id="safety-data-provenance" class="rounded-lg bg-slate-50 px-2.5 py-2 text-[10px] leading-relaxed text-slate-600">
+                실제 안전 데이터 출처: 연결 안 됨 · 마지막 갱신: 해당 없음. 표시된 시설·사고 정보는 확인된 안전 정보가 아닙니다.
               </p>
               <div class="overflow-hidden rounded-xl border border-slate-200 bg-[#e6f0e6]">
                 <svg viewBox="0 0 360 245" role="img" aria-labelledby="safety-map-title safety-map-description" class="h-56 w-full">
@@ -779,7 +783,11 @@
       </div>
       <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-900 space-y-2">
         <div class="font-bold">119 신고 및 국가지점번호 안내</div>
-        <p class="text-[11px] text-red-700">이 시연 화면은 현재 위치와 실제 국가지점번호를 확인하지 않습니다. 긴급 상황에서는 119에 신고하고, 현장 국가지점번호판이나 구조 안내 표지를 확인해 전달하세요.</p>
+        <ol class="list-decimal pl-4 text-[11px] leading-relaxed text-red-700 space-y-1">
+          <li>긴급 상황이면 119에 전화해 상황과 부상 여부를 알리세요.</li>
+          <li>주변의 실제 국가지점번호판·구조 안내 표지를 찾아 적힌 번호를 그대로 전달하세요.</li>
+          <li>표지를 찾지 못하면 산 이름, 등산로, 마지막으로 확인한 이정표를 설명하세요. 앱은 위치나 국가지점번호를 계산하지 않습니다.</li>
+        </ol>
         <a href="tel:119" class="inline-flex rounded-lg bg-red-700 px-3 py-2 font-bold text-white" aria-label="119에 전화 걸기">119에 전화 걸기</a>
       </div>
       <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs">닫기</button>
@@ -840,6 +848,7 @@
   <script src="js/courses.js"></script>
   <script src="js/recommendations.js"></script>
   <script src="js/safety.js"></script>
+  <script src="js/data-service.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

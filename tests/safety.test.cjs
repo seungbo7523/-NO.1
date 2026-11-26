@@ -30,6 +30,9 @@ test('satellite map integrations are removed while safety guidance remains', () 
   assert.match(html, /id="safety-data-course-title"/);
   assert.match(html, /시연용 가상 데이터/);
   assert.match(html, /실제 위치·사고 통계가 아닙니다/);
+  assert.match(html, /id="safety-data-provenance"/);
+  assert.match(html, /마지막 갱신: 해당 없음/);
+  assert.match(html, /국가지점번호판/);
   assert.match(html, /href="tel:119"/);
   assert.match(html, /사고 다발 구간 예시 A/);
   assert.match(html, /휴게시설 위치 예시 A/);
