@@ -106,7 +106,7 @@
           <span>9:41</span>
           <span class="bg-forest-900/80 px-2.5 py-0.5 rounded-full text-[10px] tracking-tight text-forest-100">경상남도 스마트 산행 MVP</span>
           <div class="flex items-center gap-1.5">
-            <span id="status-signal-text" class="text-[10px] text-emerald-300 font-semibold">LTE 양호</span>
+            <span id="status-signal-text" class="text-[10px] text-emerald-300 font-semibold">시연 데이터</span>
             <span class="inline-block w-4 h-2.5 border border-white/80 rounded-sm p-[1px]">
               <span class="block h-full w-3/4 bg-emerald-400 rounded-[1px]"></span>
             </span>
@@ -304,16 +304,18 @@
                 </button>
               </div>
 
-              <!-- Consent-based GPS Sharing Toggle -->
+              <!-- Explicit consent for personal hike tracking -->
               <div class="flex items-center justify-between bg-forest-50/80 border border-forest-200/80 rounded-xl px-3 py-2">
                 <div>
-                  <div class="text-xs font-bold text-forest-900">크루 GPS 위치 공유 (시연용 설정)</div>
-                  <div id="gps-consent-sub" class="text-[10px] text-forest-700">실시간 GPS 위치 공유는 아직 연결되지 않았습니다</div>
+                  <div class="text-xs font-bold text-forest-900">본인 산행 GPS 기록</div>
+                  <div id="gps-consent-sub" class="text-[10px] text-forest-700">기본 꺼짐 · 크루에게 위치를 공유하지 않습니다</div>
                 </div>
-                <button id="toggle-gps-consent" onclick="toggleGpsConsent()" aria-label="GPS 위치 공유 동의 전환" class="w-11 h-6 rounded-full bg-forest-600 p-0.5 transition flex items-center justify-end">
-                  <span class="w-5 h-5 rounded-full bg-white shadow"></span>
-                </button>
+                <label for="gps-tracking-consent" class="flex items-center gap-2 text-[10px] font-bold text-forest-900">
+                  <span>동의</span>
+                  <input id="gps-tracking-consent" type="checkbox" onchange="toggleGpsConsent(this.checked)" aria-describedby="gps-consent-sub" class="h-4 w-4 accent-forest-700" />
+                </label>
               </div>
+              <p class="text-[10px] leading-relaxed text-slate-500">동의하고 시작 버튼을 눌러야 위치 권한을 요청합니다. 시작·종료 위치와 최고 고도만 본인 기록에 저장하며 이동 경로·크루 위치 공유는 제공하지 않습니다. 동의를 끄면 추가 위치 수집을 중단하고 종료 위치 없이 기록을 마칠 수 있습니다.</p>
 
             </div>
 
@@ -481,7 +483,7 @@
                 <span class="text-xs font-extrabold text-slate-800">⛰️ 현재 고도 시뮬레이터 (시연 테스트용)</span>
                 <span id="altitude-readout" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-forest-100 text-forest-800">해발 420m</span>
               </div>
-              <input id="altitude-slider" type="range" min="200" max="1100" step="10" value="420" oninput="updateAltitude(this.value)" class="w-full accent-forest-700 cursor-pointer" />
+              <input id="altitude-slider" type="range" min="200" max="1100" step="10" value="420" oninput="TrailMateSafety.updateAltitude(this.value)" class="w-full accent-forest-700 cursor-pointer" />
               <div class="flex justify-between text-[10px] text-slate-400">
                 <span>200m (입구)</span>
                 <span class="text-amber-600 font-semibold">650m (통신 취약 기준)</span>
@@ -540,7 +542,11 @@
 
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
               <h3 class="text-sm font-extrabold text-slate-900">GPS 트래킹</h3>
-              <p class="text-[11px] text-slate-600">코스 소통방에 입장하면 위치 권한을 요청해 산행 기록을 시작합니다. 산행이 끝나면 종료 버튼을 눌러 주세요.</p>
+              <p class="text-[11px] text-slate-600">소통방 입장만으로 GPS를 수집하지 않습니다. GPS 기록은 별도 동의 후 시작 버튼을 눌러 시작하며, 동의를 끄면 추가 위치 수집을 중단하고 종료 위치 없이 기록을 마칠 수 있습니다.</p>
+              <label for="gps-tracking-consent-profile" class="flex items-center gap-2 text-xs font-bold text-forest-900">
+                <input id="gps-tracking-consent-profile" type="checkbox" onchange="toggleGpsConsent(this.checked)" class="h-4 w-4 accent-forest-700" />
+                GPS 기록에 동의합니다
+              </label>
               <p id="tracking-active" class="text-xs text-slate-600">진행 중인 기록이 없습니다.</p>
               <button id="tracking-button" onclick="finishTracking()" disabled class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs disabled:opacity-50">산행 종료</button>
               <button id="refresh-tracking" onclick="refreshTracking()" class="w-full py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs disabled:opacity-50">기록 다시 불러오기</button>
@@ -666,7 +672,7 @@
         <div class="bg-white rounded-xl p-3 border border-slate-200 flex-1 space-y-2 text-xs">
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-800">천주산 2030 크루방 (6명)</span>
-            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">GPS 동의 ON</span>
+            <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">GPS 기록은 별도 동의</span>
           </div>
           <div class="space-y-1.5 bg-slate-50 p-2 rounded-lg text-[10px]">
             <div class="bg-white p-1.5 rounded border border-slate-200"><strong>다현:</strong> 입구 주차장 도착했어요!</div>
@@ -694,7 +700,7 @@
             <div class="font-bold text-forest-900">🧭 산행 안전 정보</div>
             <div class="text-red-700 font-semibold">• 사고 구간: 시연용 가상 예시 (실제 통계 아님)</div>
             <div class="text-sky-700 font-semibold">• 휴게시설: 시연용 가상 예시 (실제 위치 아님)</div>
-            <div class="text-violet-700 font-semibold">• 실시간 GPS 위치 공유 미연동</div>
+            <div class="text-violet-700 font-semibold">• 크루 GPS 위치 공유 미지원</div>
           </div>
           <div class="w-full py-1.5 rounded-lg bg-red-600 text-white text-center font-bold text-[10px]">
             🚨 119 긴급 신고 · 국가지점번호 확인
@@ -716,7 +722,7 @@
         <p class="text-[11px] text-forest-700">선택한 코스</p>
         <p id="room-confirm-course" class="text-sm font-extrabold text-forest-900 mt-0.5"></p>
       </div>
-      <p class="text-xs text-slate-600">입장에 동의하면 회원 전용 채팅방에 참여하고 GPS 트래킹을 시작합니다. 위치 권한을 요청하며, 시작·종료 좌표와 측정한 최고 고도는 본인 기록에 저장됩니다. 이동 경로는 저장하지 않습니다.</p>
+      <p class="text-xs text-slate-600">입장 동의는 회원 전용 채팅방 참여에만 적용됩니다. GPS 기록은 별도 동의 후 직접 시작해야 하며, 크루에게 위치를 공유하지 않습니다.</p>
       <p id="room-config-warning" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2.5"></p>
       <div class="flex gap-2">
         <button onclick="closeAllModals()" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">취소</button>
@@ -771,9 +777,10 @@
         <h3 class="font-extrabold text-red-700 text-base">🚨 산행 비상 안내 & 국가지점번호</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
       </div>
-      <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-900 space-y-1">
+      <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-900 space-y-2">
         <div class="font-bold">119 신고 및 국가지점번호 안내</div>
         <p class="text-[11px] text-red-700">이 시연 화면은 현재 위치와 실제 국가지점번호를 확인하지 않습니다. 긴급 상황에서는 119에 신고하고, 현장 국가지점번호판이나 구조 안내 표지를 확인해 전달하세요.</p>
+        <a href="tel:119" class="inline-flex rounded-lg bg-red-700 px-3 py-2 font-bold text-white" aria-label="119에 전화 걸기">119에 전화 걸기</a>
       </div>
       <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs">닫기</button>
     </div>
@@ -784,15 +791,15 @@
         <h3 class="font-extrabold text-slate-900 text-base">🏃 경남 트레일 대회 & 산책로 (확장)</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
       </div>
-      <p class="text-xs text-slate-600">핵심 산행 기능 이후 단계적으로 연계되는 부가 콘텐츠입니다.</p>
+      <p class="text-xs text-slate-600">후속 확장용 시연 예시이며 실제 행사 일정이나 운영 정보가 아닙니다.</p>
       <div class="space-y-2 text-xs">
         <div class="p-3 rounded-xl bg-amber-50 border border-amber-200">
-          <div class="font-bold text-amber-900">2026 경남 황매산 트레일 러닝 챌린지</div>
-          <div class="text-[11px] text-amber-800 mt-0.5">12km 입문 코스 / 25km 능선 코스 · 대회 코스 사전 답사 크루 연계</div>
+          <div class="font-bold text-amber-900">시연 예시: 경남 산악 트레일 러닝 행사</div>
+          <div class="text-[11px] text-amber-800 mt-0.5">코스·일정은 가상 예시이며 실제 대회 정보가 아닙니다.</div>
         </div>
         <div class="p-3 rounded-xl bg-forest-50 border border-forest-200">
-          <div class="font-bold text-forest-900">창원 용지호수·광려천 가벼운 산책로</div>
-          <div class="text-[11px] text-forest-800 mt-0.5">퇴근 후 40~50분 도심형 둘레길 추천</div>
+          <div class="font-bold text-forest-900">산책로 연계 예시</div>
+          <div class="text-[11px] text-forest-800 mt-0.5">장소·거리·소요 시간은 검증되지 않은 시연 문구입니다.</div>
         </div>
       </div>
       <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">닫기</button>
@@ -804,7 +811,7 @@
         <h3 class="font-extrabold text-slate-900 text-base">🎒 등산 장비 대여·공유 (후속 확장)</h3>
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
       </div>
-      <p class="text-xs text-slate-600">초기 장비 구매 부담을 낮추기 위한 후속 확장 기능 미리보기입니다.</p>
+      <p class="text-xs text-slate-600">후속 확장용 화면 예시입니다. 표시된 상품·가격은 가상이며 실제 대여·판매·결제는 지원하지 않습니다.</p>
       <div class="space-y-2 text-xs">
         <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
           <div>
@@ -831,6 +838,8 @@
   </div>
 
   <script src="js/courses.js"></script>
+  <script src="js/recommendations.js"></script>
+  <script src="js/safety.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

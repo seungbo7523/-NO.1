@@ -6,7 +6,7 @@
     let selectedCourse = COURSES[0];
     let currentFilter = '전체';
     let hasSelectedCourse = false;
-    let isGpsConsentOn = true;
+    let isGpsConsentOn = false;
     let supabaseClient = null;
     let clerkReady = false;
     let currentUser = null;
@@ -101,9 +101,7 @@
 
     function renderCourses() {
       const container = document.getElementById('course-list');
-      const filtered = currentFilter === '전체'
-        ? COURSES
-        : COURSES.filter(c => c.difficulty === currentFilter);
+      const filtered = window.TrailMateRecommendations.filterCourses(COURSES, currentFilter);
 
       container.innerHTML = filtered.map(c => `
         <div onclick="selectCourse('${c.id}')" class="cursor-pointer bg-white hover:border-forest-500 border border-slate-200 rounded-2xl p-3.5 shadow-sm transition group">
@@ -224,91 +222,22 @@
       });
       document.getElementById('screen-body').scrollTop = 0;
       if (step === 3) renderChat();
-      if (step === 4) updateTerrainProfile();
+      if (step === 4) window.TrailMateSafety.updateTerrainProfile(selectedCourse);
     }
 
-    function updateTerrainProfile() {
-      const profile = selectedCourse?.profileElevationEstimateM;
-      const distanceKm = Number.parseFloat(selectedCourse?.distance);
-      if (!profile?.length || !Number.isFinite(distanceKm) || distanceKm <= 0) {
-        document.getElementById('terrain-profile-title').textContent = '지형 단면 자료 없음';
-        document.getElementById('terrain-profile-distance').textContent = '';
-        document.getElementById('terrain-profile-line').setAttribute('d', '');
-        document.getElementById('terrain-profile-area').setAttribute('d', '');
-        document.getElementById('terrain-profile-facility-marker').setAttribute('visibility', 'hidden');
-        document.getElementById('terrain-profile-accident-marker').setAttribute('visibility', 'hidden');
-        document.getElementById('terrain-profile-note').textContent = '코스별 고도 자료를 확인할 수 없습니다.';
-        return;
-      }
-
-      const minElevation = Math.min(...profile);
-      const maxElevation = Math.max(...profile);
-      const elevationRange = Math.max(maxElevation - minElevation, 1);
-      const plot = { left: 36, right: 304, top: 24, bottom: 100 };
-      const points = profile.map((elevation, index) => {
-        const x = plot.left + (index / (profile.length - 1)) * (plot.right - plot.left);
-        const y = plot.bottom - ((elevation - minElevation) / elevationRange) * (plot.bottom - plot.top);
-        return { x, y, elevation };
-      });
-      const linePath = points.map((point, index) =>
-        `${index === 0 ? 'M' : 'L'}${point.x.toFixed(1)},${point.y.toFixed(1)}`
-      ).join(' ');
-      const areaPath = `${linePath} L${plot.right},${plot.bottom} L${plot.left},${plot.bottom} Z`;
-      const peak = points.reduce((highest, point) => point.elevation > highest.elevation ? point : highest, points[0]);
-
-      // These fractions position illustrative markers only; they are not measured trail locations.
-      const updateSafetyMarker = (type, fraction) => {
-        const samplePosition = fraction * (points.length - 1);
-        const startIndex = Math.floor(samplePosition);
-        const endIndex = Math.min(startIndex + 1, points.length - 1);
-        const ratio = samplePosition - startIndex;
-        const x = points[startIndex].x + (points[endIndex].x - points[startIndex].x) * ratio;
-        const y = points[startIndex].y + (points[endIndex].y - points[startIndex].y) * ratio;
-        const marker = document.getElementById(`terrain-profile-${type}-marker`);
-        const line = document.getElementById(`terrain-profile-${type}-marker-line`);
-        const circle = document.getElementById(`terrain-profile-${type}-marker-circle`);
-        const glyph = document.getElementById(`terrain-profile-${type}-marker-glyph`);
-
-        marker.setAttribute('visibility', 'visible');
-        line.setAttribute('x1', x.toFixed(1));
-        line.setAttribute('y1', y.toFixed(1));
-        line.setAttribute('x2', x.toFixed(1));
-        line.setAttribute('y2', plot.bottom.toFixed(1));
-        circle.setAttribute('cx', x.toFixed(1));
-        circle.setAttribute('cy', y.toFixed(1));
-        glyph.setAttribute('x', x.toFixed(1));
-        glyph.setAttribute('y', (y + 2.2).toFixed(1));
-      };
-
-      document.getElementById('terrain-profile-title').textContent = `${selectedCourse.title} 지형 단면`;
-      document.getElementById('terrain-profile-distance').textContent = `총 거리 ${selectedCourse.distance} · 표시 최고 고도 약 ${maxElevation.toLocaleString('ko-KR')}m`;
-      document.getElementById('terrain-profile-end').textContent = `종점 · ${distanceKm} km`;
-      document.getElementById('terrain-profile-max').textContent = `${maxElevation}m`;
-      document.getElementById('terrain-profile-min').textContent = `${minElevation}m`;
-      document.getElementById('terrain-profile-line').setAttribute('d', linePath);
-      document.getElementById('terrain-profile-area').setAttribute('d', areaPath);
-      document.getElementById('terrain-profile-peak').setAttribute('cx', peak.x.toFixed(1));
-      document.getElementById('terrain-profile-peak').setAttribute('cy', peak.y.toFixed(1));
-      document.getElementById('terrain-profile-peak-label').setAttribute('x', peak.x.toFixed(1));
-      document.getElementById('terrain-profile-peak-label').setAttribute('y', Math.max(12, peak.y - 8).toFixed(1));
-      document.getElementById('terrain-profile-peak-label').textContent = `약 ${maxElevation}m`;
-      updateSafetyMarker('facility', 0.36);
-      updateSafetyMarker('accident', 0.72);
-    }
-
-    function toggleGpsConsent() {
-      isGpsConsentOn = !isGpsConsentOn;
-      const btn = document.getElementById('toggle-gps-consent');
+    function toggleGpsConsent(consented) {
+      isGpsConsentOn = consented === true;
       const sub = document.getElementById('gps-consent-sub');
       if (isGpsConsentOn) {
-        btn.className = 'w-11 h-6 rounded-full bg-forest-600 p-0.5 transition flex items-center justify-end';
-        sub.textContent = '시연 설정 ON — 실시간 GPS 위치 공유는 아직 연결되지 않았습니다';
-        showToast('시연용 설정이 켜졌습니다. 실제 위치는 공유되지 않습니다.');
+        sub.textContent = '동의 켜짐 · 직접 시작을 누르기 전에는 위치를 요청하지 않습니다';
+        if (activeTracking) startAltitudeWatch();
+        showToast('GPS 기록에 동의했습니다. 시작 버튼을 눌러 기록을 시작하세요.');
       } else {
-        btn.className = 'w-11 h-6 rounded-full bg-slate-300 p-0.5 transition flex items-center justify-start';
-        sub.textContent = '시연 설정 OFF — 실시간 GPS 위치 공유는 아직 연결되지 않았습니다';
-        showToast('시연용 설정이 꺼졌습니다. 실제 위치는 공유되지 않습니다.');
+        stopAltitudeWatch();
+        sub.textContent = '동의 꺼짐 · 추가 위치 수집을 중단하고 위치 없이 종료할 수 있습니다';
+        showToast('GPS 기록 동의를 해제했습니다. 추가 위치 수집을 중단합니다.');
       }
+      renderActiveTracking();
     }
 
     function renderChat() {
@@ -473,8 +402,12 @@
       const chatButton = document.getElementById('chat-tracking-button');
       button.disabled = !trackingReady || trackingBusy || !activeTracking;
       document.getElementById('refresh-tracking').disabled = trackingBusy;
-      chatButton.disabled = trackingBusy || (!activeTracking && !activeRoomCourseId);
-      chatButton.textContent = trackingBusy ? '처리 중...' : !trackingReady ? '기록 다시 확인' : activeTracking ? '산행 종료' : 'GPS 기록 시작 재시도';
+      ['gps-tracking-consent', 'gps-tracking-consent-profile'].forEach(id => {
+        const consentInput = document.getElementById(id);
+        if (consentInput) consentInput.checked = isGpsConsentOn;
+      });
+      chatButton.disabled = trackingBusy || (!activeTracking && (!trackingReady || !activeRoomCourseId || !isGpsConsentOn));
+      chatButton.textContent = trackingBusy ? '처리 중...' : activeTracking ? '산행 종료' : !trackingReady ? '기록 다시 확인' : isGpsConsentOn ? 'GPS 기록 시작' : 'GPS 기록 동의 후 시작';
       const course = COURSES.find(item => item.id === activeTracking?.course_id);
       const text = activeTracking
         ? `${course?.title || activeTracking.course_id} · ${new Date(activeTracking.started_at).toLocaleString('ko-KR')} 시작`
@@ -537,7 +470,7 @@
     }
 
     function startAltitudeWatch() {
-      if (!activeTracking || !navigator.geolocation || altitudeWatchSessionId === activeTracking.id) return;
+      if (!isGpsConsentOn || !activeTracking || !navigator.geolocation || altitudeWatchSessionId === activeTracking.id) return;
       stopAltitudeWatch();
       const sessionId = activeTracking.id;
       const userId = currentUser?.id;
@@ -572,7 +505,7 @@
         trackingReady = true;
         setTrackingStatus('');
         renderActiveTracking();
-        startAltitudeWatch();
+        if (isGpsConsentOn) startAltitudeWatch();
         await loadTrackingHistory();
         return true;
       } catch (error) {
@@ -642,6 +575,10 @@
 
     async function beginRoomTracking(courseId) {
       if (trackingBusy || !currentUser || activeRoomCourseId !== courseId) return;
+      if (!isGpsConsentOn) {
+        setTrackingStatus('산행 GPS 기록을 시작하려면 별도 동의를 켜 주세요.');
+        return;
+      }
       if (!await refreshTracking() || activeRoomCourseId !== courseId) return;
       if (trackingBusy || !currentUser) return;
       if (activeTracking) {
@@ -684,14 +621,19 @@
       const session = activeTracking;
       trackingBusy = true;
       renderActiveTracking();
-      setTrackingStatus('종료 위치를 확인하는 중입니다.');
+      setTrackingStatus(isGpsConsentOn ? '종료 위치를 확인하는 중입니다.' : 'GPS 동의가 꺼져 있어 종료 위치 없이 기록을 마칩니다.');
       try {
-        const position = await getTrackingPosition();
+        const position = isGpsConsentOn ? await getTrackingPosition() : null;
         if (currentUser?.id !== userId || activeTracking?.id !== session.id) return;
-        rememberAltitude(position);
+        if (position) rememberAltitude(position);
         stopAltitudeWatch();
         const { data, error } = await supabaseClient.from('tracking_sessions')
-          .update({ ended_at: new Date().toISOString(), end_lat: position.coords.latitude, end_lng: position.coords.longitude, max_altitude_m: observedAltitude })
+          .update({
+            ended_at: new Date().toISOString(),
+            end_lat: position?.coords.latitude ?? null,
+            end_lng: position?.coords.longitude ?? null,
+            max_altitude_m: observedAltitude
+          })
           .eq('id', session.id).eq('user_id', userId).is('ended_at', null)
           .select('id').single();
         if (error) throw error;
@@ -857,7 +799,7 @@
         await loadRoomMessages(courseId);
         subscribeToRoom(courseId);
         showChatStatus(`${course.title} 실시간 소통방에 입장했습니다.`, 'success');
-        void beginRoomTracking(courseId);
+        void refreshTracking();
       } catch (error) {
         activeRoomCourseId = null;
         goToStep(2);
@@ -923,27 +865,6 @@
       await stopRoomSubscription();
       goToStep(2);
       showToast('소통방에서 나왔습니다. 다시 입장하려면 동의가 필요합니다.');
-    }
-
-    function updateAltitude(val) {
-      const alt = Number(val);
-      const readout = document.getElementById('altitude-readout');
-      const banner = document.getElementById('altitude-warning-banner');
-      const signalText = document.getElementById('status-signal-text');
-
-      readout.textContent = `해발 ${alt.toLocaleString()}m`;
-
-      if (alt >= 650) {
-        banner.classList.remove('hidden');
-        readout.className = 'text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800';
-        signalText.textContent = '전파 약함 (오프라인)';
-        signalText.className = 'text-[10px] text-amber-300 font-semibold';
-      } else {
-        banner.classList.add('hidden');
-        readout.className = 'text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-forest-100 text-forest-800';
-        signalText.textContent = 'LTE 양호';
-        signalText.className = 'text-[10px] text-emerald-300 font-semibold';
-      }
     }
 
     function openModal(id) {

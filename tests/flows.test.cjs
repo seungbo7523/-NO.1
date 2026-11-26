@@ -56,7 +56,8 @@ function setup() {
         currentUser = user;
         activeRoomCourseId = roomId;
       },
-      sendChatMessage
+      sendChatMessage,
+      sendQuickStatus
     };`, context);
   return { context, element, filterButtons };
 }
@@ -111,4 +112,30 @@ test('chat API failures are surfaced and oversized messages are not submitted', 
   assert.equal(await app.context.flowTest.sendChatMessage('a'.repeat(1001)), false);
   assert.equal(inserted, undefined);
   assert.match(app.element('toast').textContent, /1,000자 이내/);
+});
+
+test('quick status buttons send a message to the active course room', async () => {
+  const app = setup();
+  let inserted;
+  const client = {
+    from() {
+      return {
+        insert(payload) { inserted = payload; return this; },
+        select() { return this; },
+        async single() {
+          return {
+            data: { ...inserted, id: 1, created_at: new Date().toISOString() },
+            error: null
+          };
+        }
+      };
+    }
+  };
+  app.context.flowTest.setChat(client, { id: 'user_1', username: 'hiker' }, 'cheonjusan');
+
+  await app.context.flowTest.sendQuickStatus('정상 도착했어요!');
+
+  assert.equal(inserted.course_id, 'cheonjusan');
+  assert.equal(inserted.body, '정상 도착했어요!');
+  assert.match(app.element('chat-messages').innerHTML, /정상 도착했어요!/);
 });
