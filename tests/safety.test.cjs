@@ -15,8 +15,10 @@ test('satellite map integrations are removed while safety guidance remains', () 
   assert.match(html, /id="terrain-profile-chart"/);
   assert.match(html, /참고용 추정/);
   assert.match(html, /id="safety-data-course-title"/);
-  assert.match(html, /위치를 표시하지 않습니다/);
-  assert.match(html, /임의로 생성하지 않습니다/);
+  assert.match(html, /시연용 가상 데이터/);
+  assert.match(html, /실제 위치·사고 통계가 아닙니다/);
+  assert.match(html, /사고 다발 구간 예시 A/);
+  assert.match(html, /휴게시설 위치 예시 A/);
 });
 
 test('terrain profiles update for each selected course and use the course distance', () => {
