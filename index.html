@@ -1165,8 +1165,8 @@
       document.getElementById('auth-name-wrap').classList.toggle('hidden', !isSignup);
       document.getElementById('auth-display-name').required = isSignup;
       document.getElementById('auth-password').autocomplete = isSignup ? 'new-password' : 'current-password';
-      document.getElementById('auth-password').minLength = isSignup ? 15 : 1;
-      document.getElementById('auth-password-label').textContent = isSignup ? '비밀번호 (15자 이상)' : '비밀번호';
+      document.getElementById('auth-password').minLength = isSignup ? 8 : 1;
+      document.getElementById('auth-password-label').textContent = isSignup ? '비밀번호 (8자 이상)' : '비밀번호';
       document.getElementById('btn-submit-auth').textContent = isSignup ? '회원가입' : '로그인';
       document.getElementById('btn-toggle-auth-mode').textContent = isSignup
         ? '이미 계정이 있으신가요? 로그인'
