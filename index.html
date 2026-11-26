@@ -7,6 +7,8 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer crossorigin="anonymous" src="https://holy-elk-6013.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js"></script>
+  <script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_aG9seS1lbGstNjAxMy5jbGVyay5hY2NvdW50cy5kZXYk" src="https://holy-elk-6013.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js"></script>
   <!-- Google Fonts: Noto Sans KR & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -657,14 +659,15 @@
           <input id="auth-display-name" type="text" maxlength="30" autocomplete="nickname" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
         </div>
         <label class="block space-y-1">
-          <span class="text-xs font-bold text-slate-700">이메일</span>
-          <input id="auth-email" type="email" required autocomplete="email" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
+          <span class="text-xs font-bold text-slate-700">아이디 (영문·숫자·밑줄, 4자 이상)</span>
+          <input id="auth-username" type="text" pattern="[A-Za-z0-9_]{4,64}" minlength="4" maxlength="64" required autocomplete="username" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
         </label>
         <label class="block space-y-1">
           <span class="text-xs font-bold text-slate-700">비밀번호 (8자 이상)</span>
           <input id="auth-password" type="password" minlength="8" required autocomplete="current-password" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-forest-600" />
         </label>
         <p id="auth-feedback" role="status" class="hidden text-xs rounded-xl p-2.5"></p>
+        <div id="clerk-captcha"></div>
         <button id="btn-submit-auth" type="submit" class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs">로그인</button>
       </form>
       <button id="btn-toggle-auth-mode" onclick="toggleAuthMode()" class="w-full text-xs text-forest-700 font-bold hover:underline">계정이 없으신가요? 회원가입</button>
@@ -830,6 +833,7 @@
     let hasSelectedCourse = false;
     let isGpsConsentOn = true;
     let supabaseClient = null;
+    let clerkReady = false;
     let currentUser = null;
     let pendingRoomCourseId = null;
     let activeRoomCourseId = null;
@@ -838,7 +842,7 @@
     let authMode = 'signin';
 
     function isSupabaseConfigured() {
-      return window.supabase
+      return window.supabase && clerkReady && supabaseClient
         && SUPABASE_URL.startsWith('https://')
         && !SUPABASE_URL.includes('YOUR_PROJECT_ID')
         && SUPABASE_PUBLIC_KEY
@@ -987,7 +991,7 @@
       const warning = document.getElementById('room-config-warning');
       const confirmButton = document.getElementById('btn-confirm-room-entry');
       const configured = isSupabaseConfigured();
-      warning.textContent = '실시간 채팅을 사용하려면 Supabase URL과 공개 키 설정이 필요합니다.';
+      warning.textContent = '로그인 또는 채팅 서버에 연결할 수 없습니다. 새로고침 후 다시 시도해 주세요.';
       warning.classList.toggle('hidden', configured);
       confirmButton.disabled = !configured;
       confirmButton.classList.toggle('opacity-50', !configured);
@@ -1132,7 +1136,7 @@
     }
 
     function getDisplayName(user) {
-      const name = user.user_metadata?.display_name || user.email?.split('@')[0] || '회원';
+      const name = user.unsafeMetadata?.display_name || user.username || '회원';
       return name.trim().slice(0, 30) || '회원';
     }
 
@@ -1140,7 +1144,7 @@
       const button = document.getElementById('btn-account');
       if (!button) return;
       button.textContent = currentUser ? '로그아웃' : '로그인 / 가입';
-      button.title = currentUser?.email || '회원 로그인';
+      button.title = currentUser?.username || '회원 로그인';
     }
 
     function setAuthFeedback(message, type = 'error') {
@@ -1150,10 +1154,8 @@
     }
 
     function authErrorMessage(error, mode) {
-      if (error.code === 'over_email_send_rate_limit' || /email rate limit exceeded/i.test(error.message || '')) {
-        return '인증 메일 발송 한도에 도달했습니다. 잠시 기다린 후 다시 시도해 주세요. 계속 발생하면 사이트 관리자에게 문의해 주세요.';
-      }
-      return `${mode === 'signup' ? '회원가입' : '로그인'}에 실패했습니다: ${error.message}`;
+      const detail = error.errors?.[0]?.longMessage || error.errors?.[0]?.message || error.message;
+      return `${mode === 'signup' ? '회원가입' : '로그인'}에 실패했습니다: ${detail || '인증 서버 오류'}`;
     }
 
     function setAuthMode(mode) {
@@ -1180,10 +1182,10 @@
         return;
       }
       if (currentUser) {
-        const { error } = await supabaseClient.auth.signOut();
-        if (error) {
+        try {
+          await window.Clerk.signOut();
+        } catch (error) {
           showToast(`로그아웃하지 못했습니다: ${error.message}`);
-          return;
         }
         return;
       }
@@ -1202,37 +1204,28 @@
       }
 
       const button = document.getElementById('btn-submit-auth');
-      const email = document.getElementById('auth-email').value.trim();
+      const username = document.getElementById('auth-username').value.trim();
       const password = document.getElementById('auth-password').value;
       const displayName = document.getElementById('auth-display-name').value.trim();
+      if (authMode === 'signup' && !displayName) {
+        setAuthFeedback('닉네임을 입력해 주세요.');
+        return;
+      }
       button.disabled = true;
       button.classList.add('opacity-50');
       document.getElementById('auth-feedback').classList.add('hidden');
 
       try {
-        let result;
-        if (authMode === 'signup') {
-          result = await supabaseClient.auth.signUp({
-            email,
-            password,
-            options: { data: { display_name: displayName } }
-          });
-        } else {
-          result = await supabaseClient.auth.signInWithPassword({ email, password });
-        }
-        if (result.error) throw result.error;
-
-        if (authMode === 'signup' && !result.data.session) {
-          currentUser = null;
-          updateAccountButton();
-          if (pendingRoomCourseId) {
-            localStorage.setItem('pending-course-room-id', pendingRoomCourseId);
-          }
-          setAuthFeedback('인증 메일을 보냈습니다. 이메일 인증 후 로그인해 주세요.', 'success');
+        const result = authMode === 'signup'
+          ? await window.Clerk.client.signUp.create({ username, password, unsafeMetadata: { display_name: displayName } })
+          : await window.Clerk.client.signIn.create({ identifier: username, password });
+        if (result.status !== 'complete' || !result.createdSessionId) {
+          setAuthFeedback('추가 인증 또는 가입 설정이 필요합니다. 관리자에게 문의해 주세요.');
           return;
         }
 
-        currentUser = result.data.user;
+        await window.Clerk.setActive({ session: result.createdSessionId });
+        currentUser = window.Clerk.user;
         updateAccountButton();
         closeAllModals();
         const courseId = pendingRoomCourseId || localStorage.getItem('pending-course-room-id');
@@ -1397,36 +1390,31 @@
     }
 
     async function initializeSupabase() {
-      if (!isSupabaseConfigured()) {
+      try {
+        if (!window.Clerk || !window.supabase) throw new Error('인증 또는 채팅 라이브러리를 불러오지 못했습니다.');
+        await window.Clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY, {
+          accessToken: async () => await window.Clerk.session?.getToken() ?? null
+        });
+        clerkReady = true;
+        currentUser = window.Clerk.user;
         updateAccountButton();
-        return;
-      }
-
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
-      const { data, error } = await supabaseClient.auth.getSession();
-      if (error) {
-        showToast(`로그인 상태를 확인하지 못했습니다: ${error.message}`);
-        return;
-      }
-
-      currentUser = data.session?.user || null;
-      updateAccountButton();
-      supabaseClient.auth.onAuthStateChange((event, session) => {
-        currentUser = session?.user || null;
-        updateAccountButton();
-        if (event === 'SIGNED_OUT') {
-          activeRoomCourseId = null;
-          void stopRoomSubscription();
-          if (!document.getElementById('screen-3').classList.contains('hidden')) {
-            goToStep(2);
+        window.Clerk.addListener(({ user }) => {
+          currentUser = user;
+          updateAccountButton();
+          if (!user && activeRoomCourseId) {
+            activeRoomCourseId = null;
+            void stopRoomSubscription();
+            if (!document.getElementById('screen-3').classList.contains('hidden')) goToStep(2);
           }
+        });
+        const pendingCourseId = localStorage.getItem('pending-course-room-id');
+        if (currentUser && pendingCourseId) {
+          localStorage.removeItem('pending-course-room-id');
+          await enterCourseRoom(pendingCourseId);
         }
-      });
-
-      const pendingCourseId = localStorage.getItem('pending-course-room-id');
-      if (currentUser && pendingCourseId) {
-        localStorage.removeItem('pending-course-room-id');
-        await enterCourseRoom(pendingCourseId);
+      } catch (error) {
+        showToast(`로그인 서버에 연결하지 못했습니다: ${error.message}`);
       }
     }
 
