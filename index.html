@@ -380,6 +380,52 @@
               </div>
             </div>
 
+            <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h3 id="safety-map-title" class="text-sm font-extrabold text-slate-900">천주산 안전 안내도</h3>
+                  <p class="text-[10px] text-slate-500 mt-0.5">휴게시설 · 사고 구간 · 크루 위치 예시</p>
+                </div>
+                <button onclick="openModal('modal-sos')" class="shrink-0 rounded-xl bg-red-600 px-3 py-2 text-[11px] leading-tight font-extrabold text-white shadow-sm">
+                  🚨 119 / 지점번호 안내
+                </button>
+              </div>
+              <p class="rounded-lg bg-amber-50 px-2.5 py-2 text-[10px] font-semibold leading-relaxed text-amber-900">
+                시연용 가상 안내도입니다. 경로·현재 위치·시설·사고 구간은 실제 데이터가 아닙니다.
+              </p>
+              <div class="overflow-hidden rounded-xl border border-slate-200 bg-[#e6f0e6]">
+                <svg viewBox="0 0 360 245" role="img" aria-labelledby="safety-map-title safety-map-description" class="h-56 w-full">
+                  <desc id="safety-map-description">코스와 시설, 크루, 사고 구간을 설명하기 위한 가상 도식이며 실제 위치 정보가 아닙니다.</desc>
+                  <ellipse cx="255" cy="82" rx="100" ry="66" fill="#79a77d" opacity="0.12" />
+                  <ellipse cx="255" cy="82" rx="68" ry="46" fill="#79a77d" opacity="0.17" />
+                  <ellipse cx="255" cy="82" rx="39" ry="27" fill="#79a77d" opacity="0.22" />
+                  <path d="M28 211 C74 185 104 163 145 139 S205 102 238 82 S278 85 298 119 S316 161 331 190" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" />
+                  <path d="M28 211 C74 185 104 163 145 139 S205 102 238 82 S278 85 298 119 S316 161 331 190" fill="none" stroke="#47785b" stroke-width="7" stroke-linecap="round" stroke-dasharray="9 7" />
+                  <circle cx="28" cy="211" r="7" fill="#1f2937" />
+                  <text x="12" y="231" font-size="9" font-weight="700" fill="#334155">입구·주차장 (가상)</text>
+                  <circle cx="151" cy="136" r="12" fill="#3182bd" stroke="#fff" stroke-width="3" />
+                  <text x="151" y="139" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">쉼</text>
+                  <text x="125" y="159" font-size="9" font-weight="700" fill="#25628a">휴게시설 예시 (가상)</text>
+                  <circle cx="188" cy="118" r="8" fill="#2f6d43" stroke="#fff" stroke-width="3" />
+                  <text x="174" y="139" font-size="9" font-weight="700" fill="#31533d">내 위치 (가상)</text>
+                  <circle cx="236" cy="91" r="11" fill="#7138d8" stroke="#fff" stroke-width="3" />
+                  <text x="236" y="94" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">크루</text>
+                  <text x="205" y="69" font-size="9" font-weight="700" fill="#5425a8">동의 크루 2명 (가상)</text>
+                  <circle cx="267" cy="79" r="23" fill="none" stroke="#c53d35" stroke-width="2" stroke-dasharray="4 3" />
+                  <path d="M267 64 L278 84 H256 Z" fill="#c53d35" stroke="#fff" stroke-width="2" />
+                  <text x="267" y="80" text-anchor="middle" font-size="8" font-weight="900" fill="#fff">!</text>
+                  <rect x="231" y="101" width="104" height="19" rx="8" fill="#9d3834" />
+                  <text x="283" y="114" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">사고 구간 예시 (가상)</text>
+                </svg>
+              </div>
+              <div class="flex flex-wrap justify-between gap-x-2 gap-y-1 px-1 text-[9px] font-semibold text-slate-600">
+                <span class="text-green-800">● 내 위치 (가상)</span>
+                <span class="text-violet-700">● 동의 크루 (가상)</span>
+                <span class="text-sky-700">● 휴게시설 (가상)</span>
+                <span class="text-red-700">● 사고 구간 (가상)</span>
+              </div>
+            </div>
+
             <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2">
               <div class="flex items-start justify-between gap-2">
                 <div>
@@ -726,9 +772,8 @@
         <button onclick="closeAllModals()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
       </div>
       <div class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-900 space-y-1">
-        <div class="font-bold">현재 추정 국가지점번호 (오프라인 좌표 기준)</div>
-        <div class="font-mono text-sm font-extrabold text-red-700">마산 다바 8412 9104 (천주산 능선 부근)</div>
-        <p class="text-[11px] text-red-700 pt-1">데이터 통신이 불안정할 경우 음성 119 신고 또는 단말기 위성/긴급 SOS 기능을 우선 활용하세요.</p>
+        <div class="font-bold">119 신고 및 국가지점번호 안내</div>
+        <p class="text-[11px] text-red-700">이 시연 화면은 현재 위치와 실제 국가지점번호를 확인하지 않습니다. 긴급 상황에서는 119에 신고하고, 현장 국가지점번호판이나 구조 안내 표지를 확인해 전달하세요.</p>
       </div>
       <button onclick="closeAllModals()" class="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs">닫기</button>
     </div>
@@ -1008,6 +1053,8 @@
       document.getElementById('detail-region').textContent = selectedCourse.region;
       document.getElementById('detail-title').textContent = selectedCourse.title;
       document.getElementById('safety-data-course-title').textContent = selectedCourse.title;
+      const mountainName = selectedCourse.title.split(' ')[1] || selectedCourse.title;
+      document.getElementById('safety-map-title').textContent = `${mountainName} 안전 안내도`;
       document.getElementById('detail-desc').textContent = selectedCourse.desc;
       document.getElementById('detail-distance').textContent = selectedCourse.distance;
       document.getElementById('detail-duration').textContent = selectedCourse.duration;

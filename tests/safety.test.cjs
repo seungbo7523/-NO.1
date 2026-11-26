@@ -12,6 +12,10 @@ test('satellite map integrations are removed while safety guidance remains', () 
   assert.match(html, /id="screen-4"/);
   assert.match(html, /id="altitude-slider"/);
   assert.match(html, /openModal\('modal-sos'\)/);
+  assert.match(html, /id="safety-map-title"/);
+  assert.match(html, /id="safety-map-description"/);
+  assert.match(html, /시연용 가상 안내도입니다/);
+  assert.doesNotMatch(html, /마산 다바 8412 9104/);
   assert.match(html, /id="terrain-profile-chart"/);
   assert.match(html, /참고용 추정/);
   assert.match(html, /id="terrain-profile-facility-marker"/);
@@ -61,7 +65,9 @@ test('terrain profiles update for each selected course and use the course distan
     assert.match(element('terrain-profile-line').attributes.d, /^M.+L/);
     assert.match(element('terrain-profile-area').attributes.d, /Z$/);
     assert.match(element('terrain-profile-title').textContent, /지형 단면$/);
-    assert.equal(element('safety-data-course-title').textContent, context.profileTest.courses.find(course => course.id === id).title);
+    const course = context.profileTest.courses.find(item => item.id === id);
+    assert.equal(element('safety-data-course-title').textContent, course.title);
+    assert.equal(element('safety-map-title').textContent, `${course.title.split(' ')[1] || course.title} 안전 안내도`);
     for (const type of ['facility', 'accident']) {
       assert.equal(element(`terrain-profile-${type}-marker`).attributes.visibility, 'visible');
       const markerLine = element(`terrain-profile-${type}-marker-line`).attributes;
