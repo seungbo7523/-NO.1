@@ -389,7 +389,7 @@
                 <span class="shrink-0 rounded-full bg-amber-100 px-2 py-1 text-[9px] font-bold text-amber-800">참고용 추정</span>
               </div>
               <svg id="terrain-profile-chart" viewBox="0 0 320 130" role="img" aria-labelledby="terrain-profile-title terrain-profile-description" class="w-full h-36">
-                <desc id="terrain-profile-description">코스 거리별 개략 고도 단면. 중간 고도는 실측값이 아닙니다.</desc>
+                <desc id="terrain-profile-description">코스 거리별 개략 고도 단면. 파란 표식은 가상 휴게시설 예시, 빨간 표식은 가상 사고 구간 예시이며 실제 위치나 사고 통계가 아닙니다.</desc>
                 <defs>
                   <linearGradient id="terrain-profile-gradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#2d7a53" stop-opacity="0.3" />
@@ -405,7 +405,21 @@
                 <path id="terrain-profile-line" d="" fill="none" stroke="#1f6140" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
                 <circle id="terrain-profile-peak" cx="0" cy="0" r="4" fill="#dc2626" stroke="white" stroke-width="2" />
                 <text id="terrain-profile-peak-label" x="0" y="0" text-anchor="middle" font-size="9" font-weight="bold" fill="#b91c1c"></text>
+                <g id="terrain-profile-facility-marker" visibility="hidden" aria-label="휴게시설 위치 가상 예시">
+                  <line id="terrain-profile-facility-marker-line" x1="0" y1="0" x2="0" y2="100" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3 2" />
+                  <circle id="terrain-profile-facility-marker-circle" cx="0" cy="0" r="5" fill="#0284c7" stroke="white" stroke-width="1.5" />
+                  <text id="terrain-profile-facility-marker-glyph" x="0" y="0" text-anchor="middle" font-size="6" font-weight="bold" fill="white">쉼</text>
+                </g>
+                <g id="terrain-profile-accident-marker" visibility="hidden" aria-label="사고 다발 구간 가상 예시">
+                  <line id="terrain-profile-accident-marker-line" x1="0" y1="0" x2="0" y2="100" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 2" />
+                  <circle id="terrain-profile-accident-marker-circle" cx="0" cy="0" r="5" fill="#dc2626" stroke="white" stroke-width="1.5" />
+                  <text id="terrain-profile-accident-marker-glyph" x="0" y="0" text-anchor="middle" font-size="7" font-weight="bold" fill="white">!</text>
+                </g>
               </svg>
+              <div class="flex flex-wrap gap-x-3 gap-y-1 text-[9px] font-semibold">
+                <span class="text-sky-700">● 휴게시설 예시 (가상)</span>
+                <span class="text-red-700">● 사고 구간 예시 (가상)</span>
+              </div>
               <div class="flex justify-between text-[9px] text-slate-500">
                 <span>출발 · 0 km</span>
                 <span id="terrain-profile-end">종점</span>
@@ -1080,6 +1094,8 @@
         document.getElementById('terrain-profile-distance').textContent = '';
         document.getElementById('terrain-profile-line').setAttribute('d', '');
         document.getElementById('terrain-profile-area').setAttribute('d', '');
+        document.getElementById('terrain-profile-facility-marker').setAttribute('visibility', 'hidden');
+        document.getElementById('terrain-profile-accident-marker').setAttribute('visibility', 'hidden');
         document.getElementById('terrain-profile-note').textContent = '코스별 고도 자료를 확인할 수 없습니다.';
         return;
       }
@@ -1099,6 +1115,30 @@
       const areaPath = `${linePath} L${plot.right},${plot.bottom} L${plot.left},${plot.bottom} Z`;
       const peak = points.reduce((highest, point) => point.elevation > highest.elevation ? point : highest, points[0]);
 
+      // These fractions position illustrative markers only; they are not measured trail locations.
+      const updateSafetyMarker = (type, fraction) => {
+        const samplePosition = fraction * (points.length - 1);
+        const startIndex = Math.floor(samplePosition);
+        const endIndex = Math.min(startIndex + 1, points.length - 1);
+        const ratio = samplePosition - startIndex;
+        const x = points[startIndex].x + (points[endIndex].x - points[startIndex].x) * ratio;
+        const y = points[startIndex].y + (points[endIndex].y - points[startIndex].y) * ratio;
+        const marker = document.getElementById(`terrain-profile-${type}-marker`);
+        const line = document.getElementById(`terrain-profile-${type}-marker-line`);
+        const circle = document.getElementById(`terrain-profile-${type}-marker-circle`);
+        const glyph = document.getElementById(`terrain-profile-${type}-marker-glyph`);
+
+        marker.setAttribute('visibility', 'visible');
+        line.setAttribute('x1', x.toFixed(1));
+        line.setAttribute('y1', y.toFixed(1));
+        line.setAttribute('x2', x.toFixed(1));
+        line.setAttribute('y2', plot.bottom.toFixed(1));
+        circle.setAttribute('cx', x.toFixed(1));
+        circle.setAttribute('cy', y.toFixed(1));
+        glyph.setAttribute('x', x.toFixed(1));
+        glyph.setAttribute('y', (y + 2.2).toFixed(1));
+      };
+
       document.getElementById('terrain-profile-title').textContent = `${selectedCourse.title} 지형 단면`;
       document.getElementById('terrain-profile-distance').textContent = `총 거리 ${selectedCourse.distance} · 표시 최고 고도 약 ${maxElevation.toLocaleString('ko-KR')}m`;
       document.getElementById('terrain-profile-end').textContent = `종점 · ${distanceKm} km`;
@@ -1111,6 +1151,8 @@
       document.getElementById('terrain-profile-peak-label').setAttribute('x', peak.x.toFixed(1));
       document.getElementById('terrain-profile-peak-label').setAttribute('y', Math.max(12, peak.y - 8).toFixed(1));
       document.getElementById('terrain-profile-peak-label').textContent = `약 ${maxElevation}m`;
+      updateSafetyMarker('facility', 0.36);
+      updateSafetyMarker('accident', 0.72);
     }
 
     function toggleGpsConsent() {
