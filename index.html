@@ -294,7 +294,7 @@
               <h3 class="text-xs font-extrabold text-slate-800">산행 전 체크 & 안전 유의사항</h3>
               <ul id="detail-cautions" class="text-xs text-slate-600 space-y-1.5">
                 <li class="flex items-start gap-2"><span class="text-amber-500 font-bold">•</span> <span>하산 직전 자갈길 구간 미끄럼 주의 (접지력 좋은 운동화/등산화 권장)</span></li>
-                <li class="flex items-start gap-2"><span class="text-forest-600 font-bold">•</span> <span>입산 전 코스·휴게시설·사고 다발지역 데이터가 자동 저장됩니다.</span></li>
+                <li class="flex items-start gap-2"><span class="text-forest-600 font-bold">•</span> <span>안전 데이터가 연동되지 않았습니다. 산행 전 공식 정보를 확인하세요.</span></li>
               </ul>
             </div>
 
@@ -330,8 +330,8 @@
               <!-- Consent-based GPS Sharing Toggle -->
               <div class="flex items-center justify-between bg-forest-50/80 border border-forest-200/80 rounded-xl px-3 py-2">
                 <div>
-                  <div class="text-xs font-bold text-forest-900">산행 중 크루 GPS 위치 공유 (동의 기반)</div>
-                  <div id="gps-consent-sub" class="text-[10px] text-forest-700">ON — 지도에서 크루원과 서로의 마지막 확인 위치를 봅니다</div>
+                  <div class="text-xs font-bold text-forest-900">크루 GPS 위치 공유 (시연용 설정)</div>
+                  <div id="gps-consent-sub" class="text-[10px] text-forest-700">실시간 GPS 위치 공유는 아직 연결되지 않았습니다</div>
                 </div>
                 <button id="toggle-gps-consent" onclick="toggleGpsConsent()" aria-label="GPS 위치 공유 동의 전환" class="w-11 h-6 rounded-full bg-forest-600 p-0.5 transition flex items-center justify-end">
                   <span class="w-5 h-5 rounded-full bg-white shadow"></span>
@@ -382,78 +382,31 @@
                 <div>
                   <div class="text-xs font-extrabold text-amber-900">고지대 통신 취약 구간 진입 안내</div>
                   <p class="text-[11px] text-amber-800 mt-0.5 leading-snug">
-                    전파 및 데이터 연결로 인해 서버 통신이 원활하지 않을 수 있습니다. <strong>사전 저장된 오프라인 코스·안전 데이터</strong>로 계속 안내됩니다.
+                    시연용 고도 기준 알림입니다. 실제 통신 상태나 오프라인 코스·안전 데이터는 확인하지 않습니다.
                   </p>
                 </div>
               </div>
             </div>
 
-            <!-- Interactive Stylized Topographic Map -->
+            <!-- Google Satellite Map -->
             <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm">
               <div class="flex items-center justify-between mb-2">
                 <div>
-                  <h2 id="map-course-name" class="text-sm font-extrabold text-slate-900">천주산 실시간 산행 안전 지도</h2>
-                  <p class="text-[10px] text-slate-500">휴게시설 · 사고 다발지역 · 동의 크루 위치 통합</p>
+                  <h2 id="map-course-name" class="text-sm font-extrabold text-slate-900">천주산 주변 위성 지도</h2>
+                  <p class="text-[10px] text-slate-500">Google 위성사진 · 선택 코스 주변 위치 참고</p>
                 </div>
                 <button onclick="openModal('modal-sos')" class="px-2.5 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-sm">
                   🚨 119 / 지점번호
                 </button>
               </div>
-
-              <!-- SVG Trail Map -->
-              <div class="relative rounded-xl overflow-hidden border border-slate-200 bg-[#e6f0e6]">
-                <svg viewBox="0 0 320 210" class="w-full h-48 block">
-                  <!-- Topographic Contours -->
-                  <ellipse cx="215" cy="65" rx="95" ry="55" fill="#d5e7d5" />
-                  <ellipse cx="215" cy="65" rx="62" ry="36" fill="#c3dcc3" />
-                  <ellipse cx="215" cy="65" rx="32" ry="18" fill="#b0d0b0" />
-
-                  <!-- Trail Path -->
-                  <path d="M35,180 C70,155 95,145 125,120 C155,95 180,85 215,65 C245,50 270,80 285,135" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" />
-                  <path d="M35,180 C70,155 95,145 125,120 C155,95 180,85 215,65 C245,50 270,80 285,135" fill="none" stroke="#2d7a53" stroke-width="3.5" stroke-dasharray="6 4" stroke-linecap="round" />
-
-                  <!-- Accident-Prone Zone (Public/Fire Dept Reference) -->
-                  <circle cx="242" cy="76" r="24" fill="#ef4444" fill-opacity="0.22" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3 2" />
-                  <g transform="translate(232, 60)">
-                    <polygon points="10,2 20,18 0,18" fill="#dc2626" />
-                    <text x="10" y="15" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">!</text>
-                  </g>
-                  <rect x="196" y="84" width="94" height="16" rx="4" fill="#991b1b" />
-                  <text x="243" y="95" font-size="8.5" fill="#ffffff" text-anchor="middle" font-weight="bold">사고 다발지역 (급경사)</text>
-
-                  <!-- Rest / Emergency Facility Marker -->
-                  <g transform="translate(112, 102)">
-                    <rect x="0" y="0" width="22" height="22" rx="6" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" />
-                    <text x="11" y="15" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">쉼</text>
-                  </g>
-                  <text x="123" y="135" font-size="8.5" fill="#0369a1" text-anchor="middle" font-weight="bold">전망 쉼터·구급함</text>
-
-                  <!-- Trailhead Marker -->
-                  <circle cx="35" cy="180" r="6" fill="#1e293b" />
-                  <text x="35" y="196" font-size="8.5" fill="#1e293b" text-anchor="middle" font-weight="bold">입구·주차장</text>
-
-                  <!-- Consenting Crew Member Marker -->
-                  <g id="map-crew-marker" transform="translate(185, 62)">
-                    <circle cx="10" cy="10" r="8" fill="#7c3aed" stroke="#ffffff" stroke-width="2" />
-                    <text x="10" y="13" font-size="8" fill="#ffffff" text-anchor="middle" font-weight="bold">크루</text>
-                    <text x="10" y="-3" font-size="8" fill="#5b21b6" text-anchor="middle" font-weight="bold">민규 외 2명</text>
-                  </g>
-
-                  <!-- User Current Position Marker (Moves with Altitude Slider) -->
-                  <g id="map-user-marker" transform="translate(145, 98)">
-                    <circle cx="10" cy="10" r="11" fill="#16a34a" class="pulse-ring" />
-                    <circle cx="10" cy="10" r="7" fill="#15803d" stroke="#ffffff" stroke-width="2" />
-                    <text x="10" y="27" font-size="8.5" fill="#14532d" text-anchor="middle" font-weight="bold">내 위치</text>
-                  </g>
-                </svg>
-              </div>
-
-              <!-- Map Legend -->
-              <div class="flex items-center justify-between text-[10px] text-slate-600 mt-2 px-1">
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-green-700 inline-block"></span> 내 위치</span>
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-violet-600 inline-block"></span> 동의 크루</span>
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-sky-600 inline-block"></span> 휴게시설</span>
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-600 inline-block"></span> 사고다발</span>
+              <div id="course-map" role="application" aria-label="선택한 산 코스 주변 Google 위성 지도" class="w-full h-64 rounded-xl overflow-hidden border border-slate-200 bg-slate-100"></div>
+              <div class="flex items-start justify-between gap-2 mt-2">
+                <p id="map-status" role="status" class="text-[10px] text-slate-500">
+                  지도 위치는 코스 주변 참고 지점입니다. 실제 산행 경로와 현재 위치를 표시하지 않습니다.
+                </p>
+                <a id="open-google-map" href="https://maps.google.com/" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[10px] font-bold text-forest-700 hover:underline">
+                  Google 지도 열기 ↗
+                </a>
               </div>
             </div>
 
@@ -474,12 +427,12 @@
             <!-- Safety & Facility Summary Cards -->
             <div class="grid grid-cols-2 gap-2">
               <div class="bg-red-50 border border-red-200 rounded-xl p-2.5">
-                <div class="text-[11px] font-extrabold text-red-800">⚠️ 전방 240m 사고 주의</div>
-                <p class="text-[10px] text-red-700 mt-0.5 leading-snug">소방·공공 참고 데이터: 능선 암반 미끄럼 다발 구간</p>
+                <div class="text-[11px] font-extrabold text-red-800">⚠️ 사고 정보 미연동</div>
+                <p class="text-[10px] text-red-700 mt-0.5 leading-snug">사고 다발지역 데이터는 제공되지 않습니다. 산행 전 공식 정보를 확인하세요.</p>
               </div>
               <div class="bg-sky-50 border border-sky-200 rounded-xl p-2.5">
-                <div class="text-[11px] font-extrabold text-sky-800">🏥 가까운 휴게·구급</div>
-                <p class="text-[10px] text-sky-700 mt-0.5 leading-snug">전망 쉼터 화장실·구급함 (현 위치에서 약 350m)</p>
+                <div class="text-[11px] font-extrabold text-sky-800">🏥 시설 정보 미연동</div>
+                <p class="text-[10px] text-sky-700 mt-0.5 leading-snug">휴게시설·구급함 위치는 제공되지 않습니다.</p>
               </div>
             </div>
           </section>
@@ -610,13 +563,13 @@
         </div>
         <div class="bg-white rounded-xl p-3 border border-slate-200 flex-1 space-y-2 text-xs">
           <div class="bg-amber-50 border border-amber-300 rounded-lg p-2 text-[10px] text-amber-900">
-            <strong>⚠️ 고지대 통신 취약 구간 안내:</strong><br/>전파로 인해 서버 통신이 원활하지 않을 수 있음 (오프라인 데이터 안내)
+            <strong>⚠️ 시연용 고도 알림:</strong><br/>실제 통신 상태와 오프라인 안전 데이터는 확인하지 않습니다.
           </div>
           <div class="bg-[#e6f0e6] rounded-lg p-2.5 border border-slate-200 text-[10px] space-y-1">
-            <div class="font-bold text-forest-900">🗺️ 통합 산행 안전 지도</div>
-            <div class="text-red-700 font-semibold">• 사고 다발지역 알림 (급경사 주의)</div>
-            <div class="text-sky-700 font-semibold">• 전망 쉼터·화장실·구급함 안내</div>
-            <div class="text-violet-700 font-semibold">• 동의 기반 크루원 위치 표시</div>
+            <div class="font-bold text-forest-900">🗺️ 코스 주변 위성사진 (API 키 필요)</div>
+            <div class="text-red-700 font-semibold">• 사고 다발지역 데이터 미연동</div>
+            <div class="text-sky-700 font-semibold">• 휴게시설·구급함 정보 미연동</div>
+            <div class="text-violet-700 font-semibold">• 실시간 GPS 위치 공유 미연동</div>
           </div>
           <div class="w-full py-1.5 rounded-lg bg-red-600 text-white text-center font-bold text-[10px]">
             🚨 119 긴급 신고 · 국가지점번호 확인
@@ -765,12 +718,14 @@
         distance: '4.2 km',
         duration: '1시간 40분',
         elevation: '638 m',
+        mapCenter: { lat: 35.287, lng: 128.609 },
+        mapZoom: 14,
         crewCount: 6,
         tags: ['입문 추천', '능선 전망', '대중교통 접근'],
         desc: '완만한 흙길과 탁 트인 능선 전망이 어우러져 등산 초보 청년도 부담 없이 즐길 수 있는 대표 힐링 코스입니다.',
         cautions: [
           '하산 직전 자갈길 구간 미끄럼 주의 (접지력 좋은 운동화/등산화 권장)',
-          '입산 전 코스·휴게시설·사고 다발지역 데이터가 기기에 자동 저장됩니다.'
+          '안전 데이터가 연동되지 않았습니다. 산행 전 공식 정보를 확인하세요.'
         ]
       },
       {
@@ -782,6 +737,8 @@
         distance: '6.8 km',
         duration: '2시간 50분',
         elevation: '761 m',
+        mapCenter: { lat: 35.210966, lng: 128.561859 },
+        mapZoom: 14,
         crewCount: 8,
         tags: ['마산만 야경·조망', '계단 구간', '크루 인기'],
         desc: '마산만을 내려다보는 시원한 조망과 적당한 오르막이 매력적인 경남 청년 인기 크루 코스입니다.',
@@ -799,6 +756,8 @@
         distance: '9.5 km',
         duration: '4시간 10분',
         elevation: '1,113 m',
+        mapCenter: { lat: 35.49407, lng: 127.97461 },
+        mapZoom: 14,
         crewCount: 4,
         tags: ['억새·철쭉 명소', '고지대 종주', '장비 필수'],
         desc: '탁 트인 고원 능선을 따라 걷는 장거리 산행 코스로, 충분한 수분과 체력 안배가 필요한 상급자 추천 코스입니다.',
@@ -816,6 +775,8 @@
         distance: '3.1 km',
         duration: '50분',
         elevation: '45 m',
+        mapCenter: { lat: 35.2323, lng: 128.682 },
+        mapZoom: 16,
         crewCount: 11,
         tags: ['부가 산책로', '퇴근 후 가볍게', '운동화 OK'],
         desc: '등산이 부담스러운 날 가볍게 걸으며 소통할 수 있는 경남 도심형 수변 산책 코스입니다.',
@@ -827,6 +788,7 @@
 
     const SUPABASE_URL = 'https://vfhjvelxirfgastdqohq.supabase.co';
     const SUPABASE_PUBLIC_KEY = 'sb_publishable_n5qdZiWcLJ9oA6swElKrBg_venzzx-O';
+    const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
 
     let selectedCourse = COURSES[0];
     let currentFilter = '전체';
@@ -840,6 +802,11 @@
     let chatSubscription = null;
     let chatMessages = [];
     let authMode = 'signin';
+    let googleMapsLoader = null;
+    let courseMap = null;
+    let courseMapMarker = null;
+    let courseMapInitializing = false;
+    let googleMapsAuthFailed = false;
 
     function isSupabaseConfigured() {
       return window.supabase && clerkReady && supabaseClient
@@ -978,7 +945,97 @@
       document.getElementById('chat-room-title').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 2030 크루방`;
 
       // Step 4 UI
-      document.getElementById('map-course-name').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 실시간 안전 지도`;
+      document.getElementById('map-course-name').textContent = `${selectedCourse.title.split(' ')[1] || selectedCourse.title} 주변 위성 지도`;
+      updateCourseMapLocation();
+    }
+
+    function setCourseMapStatus(message, isError = false) {
+      const status = document.getElementById('map-status');
+      status.textContent = message;
+      status.className = `text-[10px] ${isError ? 'text-red-700' : 'text-slate-500'}`;
+    }
+
+    function updateCourseMapLocation() {
+      if (!selectedCourse?.mapCenter) return;
+      const { lat, lng } = selectedCourse.mapCenter;
+      document.getElementById('open-google-map').href =
+        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lng}`)}`;
+      if (courseMap && courseMapMarker) {
+        courseMap.setCenter(selectedCourse.mapCenter);
+        courseMap.setZoom(selectedCourse.mapZoom);
+        courseMapMarker.setPosition(selectedCourse.mapCenter);
+        courseMapMarker.setTitle(selectedCourse.title);
+      }
+    }
+
+    function loadGoogleMaps() {
+      if (window.google?.maps) return Promise.resolve();
+      if (googleMapsLoader) return googleMapsLoader;
+      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
+        return Promise.reject(new Error('Google Maps API 키가 설정되지 않았습니다.'));
+      }
+
+      googleMapsLoader = new Promise((resolve, reject) => {
+        const callbackName = 'onGoogleMapsLoaded';
+        window[callbackName] = () => {
+          delete window[callbackName];
+          resolve();
+        };
+        window.gm_authFailure = () => {
+          googleMapsAuthFailed = true;
+          setCourseMapStatus('Google Maps API 인증에 실패했습니다. API 키, Maps JavaScript API 및 결제 설정을 확인해 주세요.', true);
+        };
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&callback=${callbackName}`;
+        script.async = true;
+        script.onerror = () => {
+          delete window[callbackName];
+          googleMapsLoader = null;
+          reject(new Error('Google Maps 스크립트를 불러오지 못했습니다.'));
+        };
+        document.head.appendChild(script);
+      });
+      return googleMapsLoader;
+    }
+
+    async function initializeCourseMap() {
+      updateCourseMapLocation();
+      if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
+        setCourseMapStatus('Google Maps API 키 설정이 필요합니다. 키를 설정하면 선택 코스 주변 위성사진이 표시됩니다.');
+        return;
+      }
+      if (courseMap || courseMapInitializing) {
+        if (courseMap) google.maps.event.trigger(courseMap, 'resize');
+        return;
+      }
+
+      courseMapInitializing = true;
+      setCourseMapStatus('Google 위성사진을 불러오는 중입니다.');
+      try {
+        await loadGoogleMaps();
+        const mapElement = document.getElementById('course-map');
+        courseMap = new google.maps.Map(mapElement, {
+          center: selectedCourse.mapCenter,
+          zoom: selectedCourse.mapZoom,
+          mapTypeId: 'satellite',
+          streetViewControl: false,
+          mapTypeControl: true,
+          fullscreenControl: true
+        });
+        courseMapMarker = new google.maps.Marker({
+          map: courseMap,
+          position: selectedCourse.mapCenter,
+          title: selectedCourse.title
+        });
+        if (!googleMapsAuthFailed) {
+          setCourseMapStatus('선택 코스 주변의 참고 지점입니다. 검증된 산행 경로, 현재 위치 또는 안전·시설 정보를 표시하지 않습니다.');
+        }
+      } catch (error) {
+        console.error('Google Maps loading failed:', error);
+        setCourseMapStatus(`${error.message} Google 지도를 링크로 열어 위치를 확인할 수 있습니다.`, true);
+      } finally {
+        courseMapInitializing = false;
+      }
     }
 
     function requestCourseRoomEntry() {
@@ -1040,23 +1097,21 @@
       });
       document.getElementById('screen-body').scrollTop = 0;
       if (step === 3) renderChat();
+      if (step === 4) void initializeCourseMap();
     }
 
     function toggleGpsConsent() {
       isGpsConsentOn = !isGpsConsentOn;
       const btn = document.getElementById('toggle-gps-consent');
       const sub = document.getElementById('gps-consent-sub');
-      const crewMarker = document.getElementById('map-crew-marker');
       if (isGpsConsentOn) {
         btn.className = 'w-11 h-6 rounded-full bg-forest-600 p-0.5 transition flex items-center justify-end';
-        sub.textContent = 'ON — 지도에서 크루원과 서로의 마지막 확인 위치를 봅니다';
-        crewMarker.classList.remove('hidden');
-        showToast('크루 GPS 위치 공유에 동의했습니다.');
+        sub.textContent = '시연 설정 ON — 실시간 GPS 위치 공유는 아직 연결되지 않았습니다';
+        showToast('시연용 설정이 켜졌습니다. 실제 위치는 공유되지 않습니다.');
       } else {
         btn.className = 'w-11 h-6 rounded-full bg-slate-300 p-0.5 transition flex items-center justify-start';
-        sub.textContent = 'OFF — 내 위치가 크루에게 공유되지 않습니다';
-        crewMarker.classList.add('hidden');
-        showToast('크루 GPS 위치 공유가 해제되었습니다.');
+        sub.textContent = '시연 설정 OFF — 실시간 GPS 위치 공유는 아직 연결되지 않았습니다';
+        showToast('시연용 설정이 꺼졌습니다. 실제 위치는 공유되지 않습니다.');
       }
     }
 
@@ -1357,15 +1412,8 @@
       const readout = document.getElementById('altitude-readout');
       const banner = document.getElementById('altitude-warning-banner');
       const signalText = document.getElementById('status-signal-text');
-      const userMarker = document.getElementById('map-user-marker');
 
       readout.textContent = `해발 ${alt.toLocaleString()}m`;
-
-      // Move user marker along trail based on altitude
-      const ratio = (alt - 200) / 900; // 0 to 1
-      const x = Math.round(45 + ratio * 165);
-      const y = Math.round(168 - ratio * 102);
-      userMarker.setAttribute('transform', `translate(${x}, ${y})`);
 
       if (alt >= 650) {
         banner.classList.remove('hidden');

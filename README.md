@@ -31,4 +31,10 @@ AI 산·코스 추천, 현장 소통, 장비 대여/거래, 크루 GPS 위치 �
 
 현재 Clerk 가입 비밀번호는 8자 이상이어야 합니다. Clerk의 비밀번호 정책을 변경하면 가입 화면의 최소 길이 안내와 입력 제한도 함께 변경하세요.
 
+### Google 위성 지도 설정
+
+안전지도 화면의 위성사진을 사용하려면 Google Cloud 프로젝트에서 Maps JavaScript API를 활성화하고 결제 계정을 연결한 뒤 API 키를 만드세요. 키에는 웹사이트 HTTP 리퍼러 제한(예: `https://seungbo7523.github.io/-NO.1/*`)과 Maps JavaScript API 제한을 모두 설정하고, `index.html`의 `GOOGLE_MAPS_API_KEY` 값을 교체합니다. 키를 설정하지 않아도 코스별 Google 지도 링크를 열 수 있습니다.
+
+지도는 코스 주변의 참고 좌표만 표시하며 검증된 등산 경로, 실시간 GPS, 사고 다발지역 또는 시설 정보를 제공하지 않습니다. 코스별 중심 좌표는 대략적인 위치입니다.
+
 `main` 브랜치에 반영되면 `.github/workflows/deploy-pages.yml`이 GitHub Pages 배포를 수행하고 Pages 활성화를 시도합니다. 저장소 정책이나 권한으로 자동 활성화되지 않으면 GitHub 저장소 설정에서 Pages 배포 원본을 **GitHub Actions**로 지정하세요.
