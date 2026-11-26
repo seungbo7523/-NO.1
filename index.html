@@ -257,35 +257,12 @@
                 </div>
               </div>
 
-              <!-- Stylized Elevation Profile SVG -->
-              <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70">
-                <div class="flex items-center justify-between text-[11px] mb-1.5">
-                  <span class="font-bold text-slate-700">고도 프로필 & 주요 거점</span>
-                  <span class="text-amber-600 font-semibold">능선 구간 전파 약함 주의</span>
+              <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70 flex items-center justify-between gap-3">
+                <div>
+                  <div class="text-[11px] font-bold text-slate-700">선택 코스 지형 단면</div>
+                  <p class="text-[10px] text-slate-500 mt-0.5">4단계 안전 정보에서 참고용 고도 윤곽을 확인하세요.</p>
                 </div>
-                <svg viewBox="0 0 300 75" class="w-full h-16 overflow-visible">
-                  <defs>
-                    <linearGradient id="elevGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#2d7a53" stop-opacity="0.35" />
-                      <stop offset="100%" stop-color="#2d7a53" stop-opacity="0.02" />
-                    </linearGradient>
-                  </defs>
-                  <!-- Warning Ridge Band -->
-                  <rect x="165" y="5" width="75" height="60" rx="4" fill="#fef3c7" opacity="0.8" />
-                  <text x="202" y="16" font-size="8" fill="#b45309" text-anchor="middle" font-weight="bold">고지대 통신주의</text>
-                  <!-- Elevation Path -->
-                  <path id="detail-elev-area" d="M10,65 Q75,55 120,38 T205,15 T290,62 L290,65 L10,65 Z" fill="url(#elevGrad)" />
-                  <path id="detail-elev-line" d="M10,65 Q75,55 120,38 T205,15 T290,62" fill="none" stroke="#1f6140" stroke-width="2.5" stroke-linecap="round" />
-                  <!-- Markers -->
-                  <circle cx="10" cy="65" r="3.5" fill="#1f6140" />
-                  <circle cx="120" cy="38" r="3.5" fill="#0284c7" />
-                  <circle cx="205" cy="15" r="4" fill="#dc2626" />
-                  <circle cx="290" cy="62" r="3.5" fill="#1f6140" />
-                  <text x="14" y="73" font-size="8" fill="#475569">입구</text>
-                  <text x="120" y="50" font-size="8" fill="#0284c7" text-anchor="middle">쉼터</text>
-                  <text x="205" y="27" font-size="8" fill="#dc2626" text-anchor="middle" font-weight="bold">정상</text>
-                  <text x="284" y="73" font-size="8" fill="#475569" text-anchor="end">하산</text>
-                </svg>
+                <button onclick="goToStep(4)" class="shrink-0 text-[10px] font-bold text-forest-700 hover:underline">단면 보기 →</button>
               </div>
             </div>
 
@@ -401,6 +378,41 @@
                   </p>
                 </div>
               </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h3 id="terrain-profile-title" class="text-xs font-extrabold text-slate-800">선택 코스 지형 단면</h3>
+                  <p id="terrain-profile-distance" class="text-[10px] text-slate-500 mt-0.5"></p>
+                </div>
+                <span class="shrink-0 rounded-full bg-amber-100 px-2 py-1 text-[9px] font-bold text-amber-800">참고용 추정</span>
+              </div>
+              <svg id="terrain-profile-chart" viewBox="0 0 320 130" role="img" aria-labelledby="terrain-profile-title terrain-profile-description" class="w-full h-36">
+                <desc id="terrain-profile-description">코스 거리별 개략 고도 단면. 중간 고도는 실측값이 아닙니다.</desc>
+                <defs>
+                  <linearGradient id="terrain-profile-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#2d7a53" stop-opacity="0.3" />
+                    <stop offset="100%" stop-color="#2d7a53" stop-opacity="0.03" />
+                  </linearGradient>
+                </defs>
+                <line x1="34" y1="18" x2="34" y2="102" stroke="#cbd5e1" stroke-width="1" />
+                <line x1="34" y1="102" x2="306" y2="102" stroke="#cbd5e1" stroke-width="1" />
+                <line x1="34" y1="60" x2="306" y2="60" stroke="#e2e8f0" stroke-dasharray="3 3" />
+                <text id="terrain-profile-max" x="30" y="20" text-anchor="end" font-size="8" fill="#64748b"></text>
+                <text id="terrain-profile-min" x="30" y="102" text-anchor="end" font-size="8" fill="#64748b"></text>
+                <path id="terrain-profile-area" d="" fill="url(#terrain-profile-gradient)" />
+                <path id="terrain-profile-line" d="" fill="none" stroke="#1f6140" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+                <circle id="terrain-profile-peak" cx="0" cy="0" r="4" fill="#dc2626" stroke="white" stroke-width="2" />
+                <text id="terrain-profile-peak-label" x="0" y="0" text-anchor="middle" font-size="9" font-weight="bold" fill="#b91c1c"></text>
+              </svg>
+              <div class="flex justify-between text-[9px] text-slate-500">
+                <span>출발 · 0 km</span>
+                <span id="terrain-profile-end">종점</span>
+              </div>
+              <p id="terrain-profile-note" class="text-[10px] leading-relaxed text-amber-800 bg-amber-50 rounded-lg p-2">
+                GPX·DEM 실측 프로필이 아닌 참고용 개략 추정입니다. 실제 지형이나 경사와 다를 수 있어 산행 판단에 사용하지 마세요.
+              </p>
             </div>
 
             <!-- Interactive Altitude Simulator (Tests High-Altitude Notice!) -->
@@ -758,6 +770,7 @@
         distance: '4.2 km',
         duration: '1시간 40분',
         elevation: '638 m',
+        profileElevationEstimateM: [55, 90, 150, 260, 390, 520, 638, 520, 350, 190, 85, 55],
         crewCount: 6,
         tags: ['입문 추천', '능선 전망', '대중교통 접근'],
         desc: '완만한 흙길과 탁 트인 능선 전망이 어우러져 등산 초보 청년도 부담 없이 즐길 수 있는 대표 힐링 코스입니다.',
@@ -775,6 +788,7 @@
         distance: '6.8 km',
         duration: '2시간 50분',
         elevation: '761 m',
+        profileElevationEstimateM: [35, 90, 170, 290, 420, 560, 680, 761, 700, 590, 450, 300, 170, 70, 35],
         crewCount: 8,
         tags: ['마산만 야경·조망', '계단 구간', '크루 인기'],
         desc: '마산만을 내려다보는 시원한 조망과 적당한 오르막이 매력적인 경남 청년 인기 크루 코스입니다.',
@@ -792,6 +806,7 @@
         distance: '9.5 km',
         duration: '4시간 10분',
         elevation: '1,113 m',
+        profileElevationEstimateM: [850, 870, 910, 970, 1030, 1080, 1113, 1070, 1090, 1030, 970, 920, 860, 820],
         crewCount: 4,
         tags: ['억새·철쭉 명소', '고지대 종주', '장비 필수'],
         desc: '탁 트인 고원 능선을 따라 걷는 장거리 산행 코스로, 충분한 수분과 체력 안배가 필요한 상급자 추천 코스입니다.',
@@ -809,6 +824,7 @@
         distance: '3.1 km',
         duration: '50분',
         elevation: '45 m',
+        profileElevationEstimateM: [22, 24, 27, 24, 31, 26, 22, 25, 23],
         crewCount: 11,
         tags: ['부가 산책로', '퇴근 후 가볍게', '운동화 OK'],
         desc: '등산이 부담스러운 날 가볍게 걸으며 소통할 수 있는 경남 도심형 수변 산책 코스입니다.',
@@ -1039,6 +1055,48 @@
       });
       document.getElementById('screen-body').scrollTop = 0;
       if (step === 3) renderChat();
+      if (step === 4) updateTerrainProfile();
+    }
+
+    function updateTerrainProfile() {
+      const profile = selectedCourse?.profileElevationEstimateM;
+      const distanceKm = Number.parseFloat(selectedCourse?.distance);
+      if (!profile?.length || !Number.isFinite(distanceKm) || distanceKm <= 0) {
+        document.getElementById('terrain-profile-title').textContent = '지형 단면 자료 없음';
+        document.getElementById('terrain-profile-distance').textContent = '';
+        document.getElementById('terrain-profile-line').setAttribute('d', '');
+        document.getElementById('terrain-profile-area').setAttribute('d', '');
+        document.getElementById('terrain-profile-note').textContent = '코스별 고도 자료를 확인할 수 없습니다.';
+        return;
+      }
+
+      const minElevation = Math.min(...profile);
+      const maxElevation = Math.max(...profile);
+      const elevationRange = Math.max(maxElevation - minElevation, 1);
+      const plot = { left: 36, right: 304, top: 24, bottom: 100 };
+      const points = profile.map((elevation, index) => {
+        const x = plot.left + (index / (profile.length - 1)) * (plot.right - plot.left);
+        const y = plot.bottom - ((elevation - minElevation) / elevationRange) * (plot.bottom - plot.top);
+        return { x, y, elevation };
+      });
+      const linePath = points.map((point, index) =>
+        `${index === 0 ? 'M' : 'L'}${point.x.toFixed(1)},${point.y.toFixed(1)}`
+      ).join(' ');
+      const areaPath = `${linePath} L${plot.right},${plot.bottom} L${plot.left},${plot.bottom} Z`;
+      const peak = points.reduce((highest, point) => point.elevation > highest.elevation ? point : highest, points[0]);
+
+      document.getElementById('terrain-profile-title').textContent = `${selectedCourse.title} 지형 단면`;
+      document.getElementById('terrain-profile-distance').textContent = `총 거리 ${selectedCourse.distance} · 표시 최고 고도 약 ${maxElevation.toLocaleString('ko-KR')}m`;
+      document.getElementById('terrain-profile-end').textContent = `종점 · ${distanceKm} km`;
+      document.getElementById('terrain-profile-max').textContent = `${maxElevation}m`;
+      document.getElementById('terrain-profile-min').textContent = `${minElevation}m`;
+      document.getElementById('terrain-profile-line').setAttribute('d', linePath);
+      document.getElementById('terrain-profile-area').setAttribute('d', areaPath);
+      document.getElementById('terrain-profile-peak').setAttribute('cx', peak.x.toFixed(1));
+      document.getElementById('terrain-profile-peak').setAttribute('cy', peak.y.toFixed(1));
+      document.getElementById('terrain-profile-peak-label').setAttribute('x', peak.x.toFixed(1));
+      document.getElementById('terrain-profile-peak-label').setAttribute('y', Math.max(12, peak.y - 8).toFixed(1));
+      document.getElementById('terrain-profile-peak-label').textContent = `약 ${maxElevation}m`;
     }
 
     function toggleGpsConsent() {
