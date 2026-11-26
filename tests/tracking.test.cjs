@@ -1,12 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
 const vm = require('node:vm');
+const loadAppSource = require('./helpers/app-source.cjs');
 
 function setup() {
-  const html = fs.readFileSync('index.html', 'utf8');
-  const script = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)]
-    .map(match => match[1]).find(text => text.includes('const COURSES'));
+  const script = loadAppSource();
   const elements = new Map();
   function element(id) {
     if (!elements.has(id)) elements.set(id, {
@@ -19,6 +17,9 @@ function setup() {
   let watchCallback;
   let altitude = 120;
   let denied = false;
+  let timedOut = false;
+  let positionRequests = 0;
+  let clearedWatches = 0;
   const db = {
     from(table) {
       if (table === 'course_room_members') {
@@ -67,11 +68,13 @@ function setup() {
   };
   const geolocation = {
     getCurrentPosition(success, failure) {
+      positionRequests++;
       if (denied) failure({ code: 1 });
+      else if (timedOut) failure({ code: 3 });
       else success({ coords: { latitude: 35, longitude: 128, altitude } });
     },
     watchPosition(success) { watchCallback = success; return 1; },
-    clearWatch() { watchCallback = null; }
+    clearWatch() { clearedWatches++; watchCallback = null; }
   };
   const context = {
     console, Date, Promise, setTimeout: () => 1, clearTimeout() {},
@@ -81,8 +84,14 @@ function setup() {
   vm.createContext(context);
   vm.runInContext(`${script}
     globalThis.trackingTest = {
-      setup(client) { supabaseClient = client; currentUser = { id: 'user_1' }; activeRoomCourseId = 'cheonjusan'; },
+      setup(client) {
+        supabaseClient = client;
+        dataService = window.TrailMateData.create(client);
+        currentUser = { id: 'user_1' };
+        activeRoomCourseId = 'cheonjusan';
+      },
       setRoom(id) { activeRoomCourseId = id; },
+      setConsent(value) { toggleGpsConsent(value); },
       enterCourseRoom, beginRoomTracking, refreshTracking, finishTracking, saveObservedAltitude,
       state() { return { activeTracking, trackingReady }; }
     };`, context);
@@ -93,14 +102,22 @@ function setup() {
     api: context.trackingTest, rows, element,
     setAltitude(value) { altitude = value; },
     setDenied(value) { denied = value; },
+    setTimedOut(value) { timedOut = value; },
+    getPositionRequestCount() { return positionRequests; },
+    getClearedWatchCount() { return clearedWatches; },
     watch(value) { watchCallback({ coords: { altitude: value } }); }
   };
 }
 
-test('room entry starts GPS and saves the observed maximum until the user finishes', async () => {
+test('room entry does not request GPS until the user consents and starts tracking', async () => {
   const app = setup();
   await app.api.enterCourseRoom('cheonjusan');
   await new Promise(resolve => setImmediate(resolve));
+  assert.equal(app.rows.length, 0);
+  assert.equal(app.getPositionRequestCount(), 0);
+
+  app.api.setConsent(true);
+  await app.api.beginRoomTracking('cheonjusan');
   assert.equal(app.rows.length, 1, app.element('toast').textContent);
   assert.equal(app.rows[0].course_id, 'cheonjusan');
   app.watch(180);
@@ -117,6 +134,7 @@ test('room entry starts GPS and saves the observed maximum until the user finish
 
 test('an existing active hike is restored and a different room cannot start another', async () => {
   const app = setup();
+  app.api.setConsent(true);
   await app.api.beginRoomTracking('cheonjusan');
   await app.api.refreshTracking();
   app.api.setRoom('muhaksan');
@@ -127,6 +145,7 @@ test('an existing active hike is restored and a different room cannot start anot
 
 test('denied GPS does not create a record and can be retried', async () => {
   const app = setup();
+  app.api.setConsent(true);
   app.setDenied(true);
   await app.api.beginRoomTracking('cheonjusan');
   assert.equal(app.rows.length, 0);
@@ -134,4 +153,35 @@ test('denied GPS does not create a record and can be retried', async () => {
   app.setDenied(false);
   await app.api.beginRoomTracking('cheonjusan');
   assert.equal(app.rows.length, 1);
+});
+
+test('GPS timeout is surfaced and a later location fix can start tracking', async () => {
+  const app = setup();
+  app.api.setConsent(true);
+  app.setTimedOut(true);
+  await app.api.beginRoomTracking('cheonjusan');
+  assert.equal(app.rows.length, 0);
+  assert.match(app.element('chat-tracking-status').textContent, /시간이 초과/);
+
+  app.setTimedOut(false);
+  await app.api.beginRoomTracking('cheonjusan');
+  assert.equal(app.rows.length, 1);
+});
+
+test('revoking consent stops GPS and lets the user finish without saving an end location', async () => {
+  const app = setup();
+  app.api.setConsent(true);
+  await app.api.beginRoomTracking('cheonjusan');
+  assert.equal(app.getPositionRequestCount(), 1);
+
+  app.api.setConsent(false);
+  assert.equal(app.getClearedWatchCount(), 1);
+  assert.equal(app.element('gps-tracking-consent').checked, false);
+  assert.equal(app.element('gps-tracking-consent-profile').checked, false);
+  await app.api.finishTracking();
+
+  assert.equal(app.getPositionRequestCount(), 1);
+  assert.equal(app.rows[0].end_lat, null);
+  assert.equal(app.rows[0].end_lng, null);
+  assert.equal(app.api.state().activeTracking, null);
 });
