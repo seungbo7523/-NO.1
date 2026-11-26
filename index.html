@@ -123,9 +123,6 @@
               <span class="font-extrabold text-base tracking-tight">TrailMate 경남</span>
             </div>
             <div class="flex items-center gap-1.5">
-              <button onclick="openMyPage()" class="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg font-medium transition">
-                마이페이지
-              </button>
               <button id="btn-account" onclick="handleAccountAction()" class="text-[11px] bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-lg font-medium transition">
                 로그인 / 가입
               </button>
@@ -344,6 +341,11 @@
             </div>
 
             <p id="chat-status" role="status" class="hidden text-[11px] rounded-xl px-3 py-2"></p>
+            <div class="bg-white rounded-2xl p-3 border border-slate-200 space-y-2">
+              <p id="chat-tracking-active" class="text-xs font-bold text-slate-700">트래킹 기록 확인 중</p>
+              <p id="chat-tracking-status" role="status" class="hidden text-xs"></p>
+              <button id="chat-tracking-button" onclick="handleChatTracking()" disabled class="w-full py-2 rounded-xl bg-forest-700 text-white font-bold text-xs disabled:opacity-50">기록 확인 중</button>
+            </div>
 
             <!-- Chat Messages Feed -->
             <div id="chat-messages" aria-live="polite" class="flex-1 min-h-[230px] max-h-[270px] overflow-y-auto phone-scroll bg-white rounded-2xl p-3 border border-slate-200 space-y-2.5"></div>
@@ -465,14 +467,12 @@
 
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
               <h3 class="text-sm font-extrabold text-slate-900">GPS 트래킹</h3>
-              <p class="text-[11px] text-slate-600">시작과 종료 버튼을 누를 때 위치 권한을 요청하고 해당 좌표와 시간을 저장합니다. 이동 경로는 추적하지 않습니다.</p>
-              <label for="tracking-course" class="block text-xs font-bold text-slate-700">산행 장소 (직접 선택)</label>
-              <select id="tracking-course" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs"></select>
+              <p class="text-[11px] text-slate-600">코스 소통방에 입장하면 위치 권한을 요청해 산행 기록을 시작합니다. 산행이 끝나면 종료 버튼을 눌러 주세요.</p>
               <p id="tracking-active" class="text-xs text-slate-600">진행 중인 기록이 없습니다.</p>
-              <button id="tracking-button" onclick="toggleTracking()" disabled class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs disabled:opacity-50">기록 확인 중</button>
+              <button id="tracking-button" onclick="finishTracking()" disabled class="w-full py-2.5 rounded-xl bg-forest-700 text-white font-bold text-xs disabled:opacity-50">산행 종료</button>
               <button id="refresh-tracking" onclick="refreshTracking()" class="w-full py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs disabled:opacity-50">기록 다시 불러오기</button>
               <p id="tracking-status" role="status" class="hidden text-xs"></p>
-              <p class="text-[10px] text-slate-500">위치는 본인의 기록에만 저장됩니다. 선택한 장소와 실제 GPS 위치는 다를 수 있습니다. 페이지를 닫아도 시작 시간은 저장되지만 종료는 직접 눌러야 합니다.</p>
+              <p class="text-[10px] text-slate-500">시작·종료 좌표와 GPS 최고 고도는 본인에게만 저장되며 이동 경로는 저장하지 않습니다. 기기·신호에 따라 고도가 부정확하거나 없을 수 있습니다. 화면을 닫거나 백그라운드로 전환하면 측정이 중단될 수 있으며, 산행은 직접 종료해야 합니다.</p>
             </div>
 
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
@@ -488,7 +488,7 @@
         </div>
 
         <!-- Bottom Tab Bar -->
-        <nav class="bg-white border-t border-slate-200 px-2 py-2 grid grid-cols-4 text-center">
+        <nav class="bg-white border-t border-slate-200 px-2 py-2 grid grid-cols-5 text-center">
           <button onclick="goToStep(1)" id="nav-btn-1" class="nav-btn flex flex-col items-center justify-center text-forest-700 font-bold">
             <span class="text-base leading-none">🏠</span>
             <span class="text-[10px] mt-1">홈·추천</span>
@@ -504,6 +504,10 @@
           <button onclick="goToStep(4)" id="nav-btn-4" class="nav-btn flex flex-col items-center justify-center text-slate-400 font-medium">
             <span class="text-base leading-none">🧭</span>
             <span class="text-[10px] mt-1">안전지도</span>
+          </button>
+          <button onclick="openMyPage()" id="nav-btn-5" class="nav-btn flex flex-col items-center justify-center text-slate-400 font-medium">
+            <span class="text-base leading-none">👤</span>
+            <span class="text-[10px] mt-1">마이페이지</span>
           </button>
         </nav>
 
@@ -639,7 +643,7 @@
         <p class="text-[11px] text-forest-700">선택한 코스</p>
         <p id="room-confirm-course" class="text-sm font-extrabold text-forest-900 mt-0.5"></p>
       </div>
-      <p class="text-xs text-slate-600">입장에 동의하면 로그인 후 이 코스의 회원 전용 실시간 채팅방에 참여합니다.</p>
+      <p class="text-xs text-slate-600">입장에 동의하면 회원 전용 채팅방에 참여하고 GPS 트래킹을 시작합니다. 위치 권한을 요청하며, 시작·종료 좌표와 측정한 최고 고도는 본인 기록에 저장됩니다. 이동 경로는 저장하지 않습니다.</p>
       <p id="room-config-warning" class="hidden text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2.5"></p>
       <div class="flex gap-2">
         <button onclick="closeAllModals()" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs">취소</button>
@@ -859,6 +863,11 @@
     let trackingReady = false;
     let trackingBusy = false;
     let profileLoadVersion = 0;
+    let altitudeWatchId = null;
+    let altitudeWatchSessionId = null;
+    let altitudeTimer = null;
+    let altitudeSavePromise = null;
+    let observedAltitude = null;
 
     function isSupabaseConfigured() {
       return window.supabase && clerkReady && supabaseClient
@@ -1267,9 +1276,6 @@
         handleAccountAction();
         return;
       }
-      const courseSelect = document.getElementById('tracking-course');
-      courseSelect.innerHTML = COURSES.map(course => `<option value="${course.id}">${escapeHTML(course.title)}</option>`).join('');
-      courseSelect.value = selectedCourse.id;
       const now = new Date();
       document.getElementById('tracking-month').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       renderProfile();
@@ -1329,40 +1335,116 @@
 
     function renderActiveTracking() {
       const button = document.getElementById('tracking-button');
-      const courseSelect = document.getElementById('tracking-course');
-      button.disabled = !trackingReady || trackingBusy;
+      const chatButton = document.getElementById('chat-tracking-button');
+      button.disabled = !trackingReady || trackingBusy || !activeTracking;
       document.getElementById('refresh-tracking').disabled = trackingBusy;
-      courseSelect.disabled = !!activeTracking || !trackingReady || trackingBusy;
-      button.textContent = trackingBusy ? '처리 중...' : !trackingReady ? '기록 확인 필요' : activeTracking ? 'GPS 트래킹 종료' : 'GPS 트래킹 시작';
+      chatButton.disabled = trackingBusy || (!activeTracking && !activeRoomCourseId);
+      chatButton.textContent = trackingBusy ? '처리 중...' : !trackingReady ? '기록 다시 확인' : activeTracking ? '산행 종료' : 'GPS 기록 시작 재시도';
       const course = COURSES.find(item => item.id === activeTracking?.course_id);
-      document.getElementById('tracking-active').textContent = activeTracking
+      const text = activeTracking
         ? `${course?.title || activeTracking.course_id} · ${new Date(activeTracking.started_at).toLocaleString('ko-KR')} 시작`
-        : '진행 중인 기록이 없습니다.';
-      if (activeTracking) courseSelect.value = activeTracking.course_id;
+        : '진행 중인 산행 기록이 없습니다.';
+      document.getElementById('tracking-active').textContent = text;
+      document.getElementById('chat-tracking-active').textContent = text;
+    }
+
+    function setTrackingStatus(message, error = false) {
+      setPageStatus('tracking-status', message, error);
+      setPageStatus('chat-tracking-status', message, error);
+    }
+
+    function stopAltitudeWatch() {
+      if (altitudeWatchId !== null) navigator.geolocation.clearWatch(altitudeWatchId);
+      altitudeWatchId = null;
+      altitudeWatchSessionId = null;
+      clearTimeout(altitudeTimer);
+      altitudeTimer = null;
+    }
+
+    function rememberAltitude(position) {
+      const altitude = position.coords.altitude;
+      if (typeof altitude !== 'number' || !Number.isFinite(altitude)) return;
+      observedAltitude = observedAltitude === null ? altitude : Math.max(observedAltitude, altitude);
+      if (activeTracking && (activeTracking.max_altitude_m === null || observedAltitude > activeTracking.max_altitude_m) && !altitudeTimer) {
+        altitudeTimer = setTimeout(() => {
+          altitudeTimer = null;
+          void saveObservedAltitude();
+        }, 15000);
+      }
+    }
+
+    async function saveObservedAltitude() {
+      if (altitudeSavePromise || !activeTracking || observedAltitude === null || trackingBusy) return;
+      const sessionId = activeTracking.id;
+      const userId = currentUser?.id;
+      const altitude = observedAltitude;
+      altitudeSavePromise = supabaseClient.from('tracking_sessions')
+        .update({ max_altitude_m: altitude }).eq('id', sessionId).eq('user_id', userId).is('ended_at', null)
+        .select('max_altitude_m').single();
+      try {
+        const { data, error } = await altitudeSavePromise;
+        if (error) throw error;
+        if (activeTracking?.id !== sessionId || currentUser?.id !== userId) return;
+        activeTracking.max_altitude_m = data.max_altitude_m;
+        if (observedAltitude > data.max_altitude_m && !altitudeTimer) {
+          altitudeTimer = setTimeout(() => {
+            altitudeTimer = null;
+            void saveObservedAltitude();
+          }, 15000);
+        }
+      } catch (error) {
+        if (activeTracking?.id === sessionId && currentUser?.id === userId) {
+          setTrackingStatus(`GPS 고도를 저장하지 못했습니다: ${error.message}. 연결을 확인해 주세요.`, true);
+        }
+      } finally {
+        altitudeSavePromise = null;
+      }
+    }
+
+    function startAltitudeWatch() {
+      if (!activeTracking || !navigator.geolocation || altitudeWatchSessionId === activeTracking.id) return;
+      stopAltitudeWatch();
+      const sessionId = activeTracking.id;
+      const userId = currentUser?.id;
+      altitudeWatchSessionId = sessionId;
+      altitudeWatchId = navigator.geolocation.watchPosition(position => {
+        if (activeTracking?.id === sessionId && currentUser?.id === userId) rememberAltitude(position);
+      }, error => {
+        if (activeTracking?.id === sessionId && currentUser?.id === userId) {
+          setTrackingStatus(`GPS 고도 측정이 중단되었거나 지연되고 있습니다: ${error.message}. 위치 권한과 신호를 확인해 주세요.`, true);
+          if (error.code === 1) stopAltitudeWatch();
+        }
+      }, { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 });
     }
 
     async function refreshTracking() {
-      if (trackingBusy || !currentUser || !supabaseClient) return;
+      if (trackingBusy || !currentUser || !supabaseClient) return false;
       const userId = currentUser?.id;
       const version = ++profileLoadVersion;
       trackingReady = false;
-      activeTracking = null;
       renderActiveTracking();
-      setPageStatus('tracking-status', '기록을 불러오는 중입니다.');
+      setTrackingStatus('기록을 불러오는 중입니다.');
       try {
         const { data, error } = await supabaseClient.from('tracking_sessions')
-          .select('id, course_id, started_at').eq('user_id', userId).is('ended_at', null).maybeSingle();
+          .select('id, course_id, started_at, max_altitude_m').eq('user_id', userId).is('ended_at', null).maybeSingle();
         if (error) throw error;
-        if (currentUser?.id !== userId || version !== profileLoadVersion) return;
+        if (currentUser?.id !== userId || version !== profileLoadVersion) return false;
+        if (activeTracking?.id !== data?.id) {
+          stopAltitudeWatch();
+          observedAltitude = data?.max_altitude_m ?? null;
+        }
         activeTracking = data;
         trackingReady = true;
-        setPageStatus('tracking-status', '');
+        setTrackingStatus('');
         renderActiveTracking();
+        startAltitudeWatch();
         await loadTrackingHistory();
+        return true;
       } catch (error) {
-        if (currentUser?.id !== userId || version !== profileLoadVersion) return;
-        setPageStatus('tracking-status', `기록을 불러오지 못했습니다: ${error.message} (데이터베이스 설정을 확인해 주세요.)`, true);
+        if (currentUser?.id !== userId || version !== profileLoadVersion) return false;
+        setTrackingStatus(`기록을 불러오지 못했습니다: ${error.message} (데이터베이스 설정을 확인해 주세요.)`, true);
         document.getElementById('tracking-summary').textContent = '기록을 불러오지 못했습니다.';
+        return false;
       }
     }
 
@@ -1379,7 +1461,7 @@
       history.textContent = '';
       try {
         const { data, error } = await supabaseClient.from('tracking_sessions')
-          .select('id, course_id, started_at, ended_at')
+          .select('id, course_id, started_at, ended_at, max_altitude_m')
           .eq('user_id', userId).not('ended_at', 'is', null)
           .gte('started_at', start.toISOString()).lt('started_at', end.toISOString())
           .order('started_at', { ascending: false });
@@ -1389,7 +1471,8 @@
         history.innerHTML = data.length ? data.map(row => {
           const course = COURSES.find(item => item.id === row.course_id);
           const minutes = Math.max(0, Math.floor((new Date(row.ended_at) - new Date(row.started_at)) / 60000));
-          return `<div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs"><div class="font-bold text-slate-800">${escapeHTML(course?.title || row.course_id)}</div><div class="text-slate-500 mt-1">${escapeHTML(new Date(row.started_at).toLocaleString('ko-KR'))} · ${minutes}분</div></div>`;
+          const altitude = row.max_altitude_m === null ? '고도 측정값 없음' : `GPS 최고 고도 약 ${Math.round(row.max_altitude_m)}m`;
+          return `<div class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs"><div class="font-bold text-slate-800">${escapeHTML(course?.title || row.course_id)}</div><div class="text-slate-500 mt-1">${escapeHTML(new Date(row.started_at).toLocaleString('ko-KR'))} · ${minutes}분 · ${escapeHTML(altitude)}</div></div>`;
         }).join('') : '<p class="text-xs text-slate-500">이 달의 완료된 기록이 없습니다.</p>';
       } catch (error) {
         if (currentUser?.id === userId && document.getElementById('tracking-month').value === month) {
@@ -1413,31 +1496,80 @@
       });
     }
 
-    async function toggleTracking() {
-      if (trackingBusy || !trackingReady || !currentUser) return;
+    async function handleChatTracking() {
+      if (!trackingReady) {
+        await refreshTracking();
+        return;
+      }
+      if (activeTracking) await finishTracking();
+      else if (activeRoomCourseId) await beginRoomTracking(activeRoomCourseId);
+    }
+
+    async function beginRoomTracking(courseId) {
+      if (trackingBusy || !currentUser || activeRoomCourseId !== courseId) return;
+      if (!await refreshTracking() || activeRoomCourseId !== courseId) return;
+      if (trackingBusy || !currentUser) return;
+      if (activeTracking) {
+        setTrackingStatus(activeTracking.course_id === courseId
+          ? '진행 중인 산행 기록을 이어갑니다.'
+          : '다른 코스의 산행이 진행 중입니다. 기존 산행을 종료한 뒤 이 코스에서 기록을 시작하세요.', activeTracking.course_id !== courseId);
+        return;
+      }
       const userId = currentUser.id;
-      const session = activeTracking;
-      const courseId = document.getElementById('tracking-course').value;
       trackingBusy = true;
       renderActiveTracking();
-      setPageStatus('tracking-status', 'GPS 위치를 확인하는 중입니다.');
+      setTrackingStatus('GPS 위치를 확인하는 중입니다.');
       try {
         const position = await getTrackingPosition();
-        if (currentUser?.id !== userId) throw new Error('로그인 계정이 변경되었습니다.');
-        const { latitude, longitude } = position.coords;
-        const query = session
-          ? supabaseClient.from('tracking_sessions').update({ ended_at: new Date().toISOString(), end_lat: latitude, end_lng: longitude }).eq('id', session.id).eq('user_id', userId).is('ended_at', null)
-          : supabaseClient.from('tracking_sessions').insert({ user_id: userId, course_id: courseId, start_lat: latitude, start_lng: longitude });
-        const { data, error } = await query.select('id, course_id, started_at, ended_at').single();
+        if (currentUser?.id !== userId || activeRoomCourseId !== courseId) return;
+        const { latitude, longitude, altitude } = position.coords;
+        const maxAltitude = typeof altitude === 'number' && Number.isFinite(altitude) ? altitude : null;
+        const { data, error } = await supabaseClient.from('tracking_sessions')
+          .insert({ user_id: userId, course_id: courseId, start_lat: latitude, start_lng: longitude, max_altitude_m: maxAltitude })
+          .select('id, course_id, started_at, max_altitude_m').single();
         if (error) throw error;
         if (currentUser?.id !== userId) return;
-        activeTracking = session ? null : data;
-        setPageStatus('tracking-status', session ? '트래킹을 종료하고 기록을 저장했습니다.' : 'GPS 트래킹을 시작했습니다.');
-        if (session) await loadTrackingHistory();
+        activeTracking = data;
+        observedAltitude = data.max_altitude_m;
+        setTrackingStatus('GPS 산행 기록을 시작했습니다. 산행 후 종료 버튼을 눌러 주세요.');
+        startAltitudeWatch();
       } catch (error) {
         if (currentUser?.id === userId) {
-          setPageStatus('tracking-status', `트래킹을 처리하지 못했습니다: ${error.message}`, true);
-          trackingReady = false;
+          setTrackingStatus(`산행 기록을 시작하지 못했습니다: ${error.message} 채팅은 이용할 수 있으며, GPS 기록을 다시 시작해 주세요.`, true);
+        }
+      } finally {
+        trackingBusy = false;
+        renderActiveTracking();
+      }
+    }
+
+    async function finishTracking() {
+      if (trackingBusy || !trackingReady || !currentUser || !activeTracking) return;
+      const userId = currentUser.id;
+      const session = activeTracking;
+      trackingBusy = true;
+      renderActiveTracking();
+      setTrackingStatus('종료 위치를 확인하는 중입니다.');
+      try {
+        const position = await getTrackingPosition();
+        if (currentUser?.id !== userId || activeTracking?.id !== session.id) return;
+        rememberAltitude(position);
+        stopAltitudeWatch();
+        const { data, error } = await supabaseClient.from('tracking_sessions')
+          .update({ ended_at: new Date().toISOString(), end_lat: position.coords.latitude, end_lng: position.coords.longitude, max_altitude_m: observedAltitude })
+          .eq('id', session.id).eq('user_id', userId).is('ended_at', null)
+          .select('id').single();
+        if (error) throw error;
+        if (!data) throw new Error('진행 중인 산행을 찾을 수 없습니다.');
+        if (currentUser?.id !== userId) return;
+        activeTracking = null;
+        observedAltitude = null;
+        setTrackingStatus('산행을 종료하고 기록을 저장했습니다.');
+        await loadTrackingHistory();
+      } catch (error) {
+        if (currentUser?.id === userId) {
+          setTrackingStatus(`산행을 종료하지 못했습니다: ${error.message} 다시 시도해 주세요.`, true);
+          startAltitudeWatch();
         }
       } finally {
         trackingBusy = false;
@@ -1590,6 +1722,7 @@
         await loadRoomMessages(courseId);
         subscribeToRoom(courseId);
         showChatStatus(`${course.title} 실시간 소통방에 입장했습니다.`, 'success');
+        void beginRoomTracking(courseId);
       } catch (error) {
         activeRoomCourseId = null;
         goToStep(2);
@@ -1699,16 +1832,20 @@
         clerkReady = true;
         currentUser = window.Clerk.user;
         updateAccountButton();
+        if (currentUser) void refreshTracking();
         window.Clerk.addListener(({ user }) => {
           const previousUserId = currentUser?.id;
           currentUser = user;
           updateAccountButton();
           if (previousUserId && previousUserId !== user?.id) {
             profileLoadVersion++;
+            stopAltitudeWatch();
             activeTracking = null;
+            observedAltitude = null;
             trackingReady = false;
             if (!document.getElementById('screen-5').classList.contains('hidden')) goToStep(1);
           }
+          if (user && previousUserId !== user.id) void refreshTracking();
           if (!user && activeRoomCourseId) {
             activeRoomCourseId = null;
             void stopRoomSubscription();
