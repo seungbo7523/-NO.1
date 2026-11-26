@@ -31,11 +31,11 @@ AI 산·코스 추천, 현장 소통, 장비 대여/거래, 크루 GPS 위치 �
 
 현재 Clerk 가입 비밀번호는 8자 이상이어야 합니다. Clerk의 비밀번호 정책을 변경하면 가입 화면의 최소 길이 안내와 입력 제한도 함께 변경하세요.
 
-### Google 위성 지도 설정
+### MapTiler 위성 지도 설정
 
-안전지도 화면의 위성사진을 사용하려면 Google Cloud 프로젝트에서 Maps JavaScript API를 활성화하고 결제 계정을 연결한 뒤 API 키를 만드세요. 키에는 웹사이트 HTTP 리퍼러 제한(예: `https://seungbo7523.github.io/-NO.1/*`)과 Maps JavaScript API 제한을 모두 설정하고, `index.html`의 `GOOGLE_MAPS_API_KEY` 값을 교체합니다. 키를 설정하지 않아도 코스별 Google 지도 링크를 열 수 있습니다.
+안전지도는 MapTiler Satellite 타일을 Leaflet으로 표시합니다. MapTiler API 키를 만들고 **Allowed HTTP Origins**에 `seungbo7523.github.io`를 설정한 뒤 GitHub 저장소의 **Settings → Secrets and variables → Actions**에서 `MAPTILER_API_KEY` 이름으로 저장합니다. 배포 워크플로는 이 비밀값을 배포 산출물에만 주입하며 저장소 소스에는 키를 기록하지 않습니다. 클라이언트 지도 요청에 사용되는 키는 브라우저에서 보일 수 있으므로 MapTiler 도메인 제한을 유지하세요.
 
-지도는 코스 주변의 참고 좌표만 표시하며 검증된 등산 경로, 실시간 GPS, 사고 다발지역 또는 시설 정보를 제공하지 않습니다. 코스별 중심 좌표는 대략적인 위치입니다.
+무료 요금제에는 월간 사용 한도와 비상업적 이용 조건이 있으므로 현재 정책을 확인하세요. 지도는 코스 주변의 참고 좌표만 표시하며 검증된 등산 경로, 실시간 GPS, 사고 다발지역 또는 시설 정보를 제공하지 않습니다. 코스별 중심 좌표는 대략적인 위치입니다. 키 설정이 없거나 타일 요청이 실패하면 코스별 Google 지도 링크를 사용할 수 있습니다.
 
 `main` 브랜치에 반영되면 `.github/workflows/deploy-pages.yml`이 GitHub Pages 배포를 수행하고 Pages 활성화를 시도합니다. 저장소 정책이나 권한으로 자동 활성화되지 않으면 GitHub 저장소 설정에서 Pages 배포 원본을 **GitHub Actions**로 지정하세요.
 

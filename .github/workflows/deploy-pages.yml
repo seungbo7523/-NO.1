@@ -27,6 +27,24 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Inject MapTiler API key
+        env:
+          MAPTILER_API_KEY: ${{ secrets.MAPTILER_API_KEY }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          key = os.environ.get("MAPTILER_API_KEY", "").strip()
+          if not key:
+              raise SystemExit("MAPTILER_API_KEY Actions secret is required")
+          index = Path("index.html")
+          html = index.read_text()
+          placeholder = "__MAPTILER_API_KEY__"
+          if html.count(placeholder) != 1:
+              raise SystemExit("Expected exactly one MapTiler key placeholder")
+          index.write_text(html.replace(placeholder, key))
+          PY
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
